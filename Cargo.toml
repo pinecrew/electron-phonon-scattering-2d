@@ -1,0 +1,7 @@
+[package]
+name = "electron-phonon-scattering-2d"
+version = "0.1.0"
+authors = ["<insert your info>", "Alexey Golubev <dr.freecx@gmail.com>"]
+
+[dependencies]
+rust-ini = "0.9"
