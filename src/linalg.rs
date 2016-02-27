@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 use std::ops::{Add, Sub, Mul, Div, Neg};
 use std::cmp::PartialEq;
+use std::fmt;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Vec2 {
@@ -15,28 +16,28 @@ pub struct Point {
 }
 
 impl Vec2 {
-    fn new(x: f64, y: f64) -> Vec2 {
+    pub fn new(x: f64, y: f64) -> Vec2 {
         Vec2 { x: x, y: y }
     }
-    fn zero() -> Vec2 {
+    pub fn zero() -> Vec2 {
         Vec2::new(0.0, 0.0)
     }
-    fn dot(a: Vec2, b: Vec2) -> f64 {
+    pub fn dot(a: Vec2, b: Vec2) -> f64 {
         a.x * b.x + a.y * b.y
     }
-    fn cross(a: Vec2, b: Vec2) -> f64 {
+    pub fn cross(a: Vec2, b: Vec2) -> f64 {
         a.x * b.y - a.y * b.x
     }
-    fn cross_z(&self, _rhs: f64) -> Vec2 {
+    pub fn cross_z(&self, _rhs: f64) -> Vec2 {
         Vec2::new(self.y, -self.x) * _rhs
     }
-    fn len(&self) -> f64 {
+    pub fn len(&self) -> f64 {
         Vec2::dot(*self, *self).sqrt()
     }
-    fn ort(self) -> Vec2 {
+    pub fn ort(self) -> Vec2 {
         self / self.len()
     }
-    fn sqrt(&self) -> Vec2 {
+    pub fn sqrt(&self) -> Vec2 {
         Vec2::new(self.x.sqrt(), self.y.sqrt())
     }
 }
@@ -54,14 +55,6 @@ impl Sub for Vec2 {
 
     fn sub(self, _rhs: Self) -> Self {
         Vec2::new(self.x - _rhs.x, self.y - _rhs.y)
-    }
-}
-
-impl Neg for Vec2 {
-    type Output = Self;
-
-    fn neg(self) -> Self {
-        Vec2::new(-self.x, -self.y)
     }
 }
 
@@ -84,20 +77,14 @@ impl Div<f64> for Vec2 {
     }
 }
 
-impl PartialEq for Vec2 {
-    fn eq(&self, other: &Self) -> bool {
-        self.x == other.x && self.y == other.y
-    }
-}
-
 impl Point {
-    fn new(x: f64, y: f64) -> Point {
+    pub fn new(x: f64, y: f64) -> Point {
         Point { x: x, y: y }
     }
-    fn zero() -> Point {
+    pub fn zero() -> Point {
         Point::new(0.0, 0.0)
     }
-    fn from_vec2(v: Vec2) -> Point {
+    pub fn from_vec2(v: Vec2) -> Point {
         Point::new(v.x, v.y)
     }
 }
@@ -126,19 +113,31 @@ impl Sub for Point {
     }
 }
 
-impl Neg for Point {
-    type Output = Self;
+macro_rules! same_functional_impl {
+    ( $( $t:ty ),* ) => {
+        $(
+            impl Neg for $t {
+                type Output = Self;
 
-    fn neg(self) -> Self {
-        Point::new(-self.x, -self.y)
+                fn neg(self) -> Self {
+                    Self::new(-self.x, -self.y)
+                }
+            }
+            impl PartialEq for $t {
+                fn eq(&self, other: &Self) -> bool {
+                    self.x == other.x && self.y == other.y
+                }
+            }
+            impl fmt::Display for $t {
+                fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                    write!(f, "({}, {})", self.x, self.y)
+                }
+            }
+        )*
     }
 }
 
-impl PartialEq for Point {
-    fn eq(&self, other: &Self) -> bool {
-        self.x == other.x && self.y == other.y
-    }
-}
+same_functional_impl!(Vec2, Point);
 
 #[cfg(test)]
 mod linalg_test {
