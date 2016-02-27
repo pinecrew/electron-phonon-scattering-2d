@@ -72,7 +72,6 @@ pub struct Fields {
     pub B: (f64, f64, f64),
     // omega = (omega1, omega2)
     pub omega: (f64, f64),
-    // phi = (phi, phi1, phi2)
     pub phi: f64,
 }
 

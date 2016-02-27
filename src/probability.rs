@@ -9,13 +9,9 @@ use scattering::structs::{Files, Probability, Bzone};
 use scattering::linalg::{Vec2, Point};
 use scattering::material_specific::{energy, energy_gradient, get_energy_limits, pmax};
 
-
-fn momentums_with_energy_in_dir(e: f64,
-                                theta: f64,
-                                samples: usize,
-                                precision: f64,
-                                bzone: &Bzone)
-                                -> Vec<Point> {
+#[cfg_attr(rustfmt, rustfmt_skip)]
+fn momentums_with_energy_in_dir(e: f64, theta: f64, samples: usize,
+                                precision: f64, bzone: &Bzone) -> Vec<Point> {
     let dir = Vec2::from_polar(1.0, theta);
     let step = dir * pmax(theta, bzone) / (samples as f64);
 
@@ -42,7 +38,7 @@ fn momentums_with_energy_in_dir(e: f64,
 
 fn probability(e: f64, p: Arc<Probability>, b: Arc<Bzone>) -> f64 {
     use std::f64::consts::PI;
-    use std::cmp::{min, max};
+    use std::cmp::min;
 
     let mut old: f64 = 0.0;
     let mut new: f64 = 1.0;
