@@ -60,7 +60,7 @@ pub fn velocity(p : &Point) -> Vec2 {
     * Границы первой зоны Бриллюэна
     *
 */
-pub fn pmax(theta : f64, bzone : Bzone) -> f64 {
+pub fn pmax(theta : f64, bzone : &Bzone) -> f64 {
     // Считаем расстояние от начала координат до точки пересечения луча с
     // отрезками
     let OA = bzone.A.position();
@@ -103,7 +103,7 @@ pub fn to_first_bz(p : Point, bzone : Bzone) -> Point {
     p - bzone.basis.0 * n1 - bzone.basis.1 * n2
 }
 
-pub fn get_energy_limits(bzone : Bzone) -> (f64, f64) {
+pub fn get_energy_limits(bzone : &Bzone) -> (f64, f64) {
     let mut emin = 100.0;
     let mut emax = -100.0;
     let n = 1000;

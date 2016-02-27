@@ -48,6 +48,9 @@ impl Files {
         }
         (a, b)
     }
+    pub fn write_probabilities(&self, energies : Vec<f64>, probs : Vec<f64>) {
+        unimplemented!()
+    }
 }
 
 pub struct Phonons {
