@@ -6,28 +6,31 @@ use std::fmt;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Vec2 {
-    x: f64,
-    y: f64,
+    pub x: f64,
+    pub y: f64,
 }
 
 #[derive(Debug, Clone, Copy)]
 pub struct Point {
-    x: f64,
-    y: f64
+    pub x: f64,
+    pub y: f64
 }
 
 impl Vec2 {
     pub fn new(x: f64, y: f64) -> Vec2 {
         Vec2 { x: x, y: y }
     }
+    pub fn from_polar(r: f64, theta: f64) -> Vec2 {
+        Vec2 { x: r * f64::cos(theta), y: r * f64::sin(theta) }
+    }
     pub fn zero() -> Vec2 {
         Vec2::new(0.0, 0.0)
     }
-    pub fn dot(a: Vec2, b: Vec2) -> f64 {
-        a.x * b.x + a.y * b.y
+    pub fn dot(self, b: Vec2) -> f64 {
+        self.x * b.x + self.y * b.y
     }
-    pub fn len(&self) -> f64 {
-        Vec2::dot(*self, *self).sqrt()
+    pub fn len(self) -> f64 {
+        self.dot(self).sqrt()
     }
     pub fn ort(self) -> Vec2 {
         self / self.len()
@@ -76,11 +79,17 @@ impl Point {
     pub fn new(x: f64, y: f64) -> Point {
         Point { x: x, y: y }
     }
+    pub fn from_polar(r: f64, theta: f64) -> Point {
+        Point { x: r * f64::cos(theta), y: r * f64::sin(theta) }
+    }
     pub fn zero() -> Point {
         Point::new(0.0, 0.0)
     }
     pub fn from_vec2(v: Vec2) -> Point {
         Point::new(v.x, v.y)
+    }
+    pub fn position(self) -> Vec2 {
+        Vec2::new(self.x, self.y)
     }
 }
 
@@ -175,6 +184,13 @@ mod linalg_test {
     }
 
     #[test]
+    fn vector_from_polar() {
+        let a = Vec2::new(3.0, 4.0);
+        let b = Vec2::from_polar(5.0, f64::atan2(4.0, 3.0));
+        assert!((a - b).len() < 1e-10);
+    }
+
+    #[test]
     fn vector_add() {
         let a = Vec2::new(1.0, 2.0);
         let b = Vec2::new(-3.0, 6.0);
@@ -195,7 +211,8 @@ mod linalg_test {
         let a = Vec2::new(1.0, 2.0);
         let b = Vec2::new(-3.0, 6.0);
         let c = 9.0;
-        assert_eq!(Vec2::dot(a, b), c);
+        assert_eq!(a.dot(b), c);
+        assert_eq!(b.dot(a), c);
     }
 
     #[test]
@@ -203,7 +220,8 @@ mod linalg_test {
         let a = Vec2::new(1.0, 2.0);
         let b = Vec2::new(-3.0, 6.0);
         let c = 12.0;
-        assert_eq!(Vec2::cross(a, b), c);
+        assert_eq!(a.cross(b), c);
+        assert_eq!(b.cross(a), -c);
     }
 
     #[test]
@@ -211,7 +229,7 @@ mod linalg_test {
         let a = Vec2::new(1.0, 2.0);
         let b = 2.0;
         let c = Vec2::new(4.0, -2.0);
-        assert_eq!(Vec2::cross(a, b), c);
+        assert_eq!(a.cross(b), c);
     }
 
     #[test]

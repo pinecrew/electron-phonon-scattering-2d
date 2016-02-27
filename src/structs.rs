@@ -51,30 +51,30 @@ impl Files {
 }
 
 pub struct Phonons {
-    beta: f64,
-    wla_max: f64,
-    wlo_max: f64,
-    T: f64
+    pub beta: f64,
+    pub wla_max: f64,
+    pub wlo_max: f64,
+    pub T: f64
 }
 
 pub struct Fields {
     // E = (E0, E1, E2)
-    E: (Vec2, Vec2, Vec2),
+    pub E: (Vec2, Vec2, Vec2),
     // B = (B0, B1, B2)
-    B: (f64, f64, f64),
+    pub B: (f64, f64, f64),
     // omega = (omega1, omega2)
-    omega: (f64, f64),
+    pub omega: (f64, f64),
     // phi = (phi, phi1, phi2)
-    phi: f64
+    pub phi: f64
 }
 
 pub struct Bzone {
-    A: Point,
-    B: Point,
-    C: Point,
-    D: Point,
-    basis: (Vec2, Vec2),
-    dual_basis: (Vec2, Vec2)
+    pub A: Point,
+    pub B: Point,
+    pub C: Point,
+    pub D: Point,
+    pub basis: (Vec2, Vec2),
+    pub dual_basis: (Vec2, Vec2)
 }
 
 pub struct Probability {
@@ -100,17 +100,17 @@ impl Probability {
     }
 }
 pub struct Model {
-    dt: f64,
-    all_time: f64,
-    threads: u32,
-    particles: u32
+    pub dt: f64,
+    pub all_time: f64,
+    pub threads: u32,
+    pub particles: u32
 }
 
 pub struct Plot {
-    low: f64,
-    hight: f64,
-    step: f64,
-    var: String
+    pub low: f64,
+    pub hight: f64,
+    pub step: f64,
+    pub var: String
 }
 
 pub struct ExecuteModel {
