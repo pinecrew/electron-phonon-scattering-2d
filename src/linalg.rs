@@ -3,6 +3,7 @@ use std::ops::{Add, Sub, Mul, Div, Neg};
 use std::cmp::PartialEq;
 use std::fmt;
 use std::str::FromStr;
+use std::num;
 
 
 #[derive(Debug, Clone, Copy)]
@@ -160,11 +161,11 @@ macro_rules! same_functional_impl {
                 }
             }
             impl FromStr for $t {
-                type Err = ();
+                type Err = num::ParseFloatError;
                 fn from_str(s : &str) -> Result<Self, Self::Err> {
                     let words: Vec<&str> = s.split_whitespace().collect();
-                    let x : f64 = words[0].parse().unwrap();
-                    let y : f64 = words[1].parse().unwrap();
+                    let x : f64 = try!(words[0].parse());
+                    let y : f64 = try!(words[1].parse());
                     Ok(Self::new(x, y))
                 }
             }

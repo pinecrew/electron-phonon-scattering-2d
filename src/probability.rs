@@ -35,8 +35,8 @@ fn probability(e : f64, p : &Probability) -> f64 {
             }
             std::mem::swap(&mut curr, &mut prev);
         }
-        n*=2;
-        --c;
+        n *= 2;
+        c -= 1;
     }
     new
 }
