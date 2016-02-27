@@ -134,16 +134,29 @@ impl Neg for Point {
     }
 }
 
+impl PartialEq for Point {
+    fn eq(&self, other: &Self) -> bool {
+        self.x == other.x && self.y == other.y
+    }
+}
+
 #[cfg(test)]
 mod linalg_test {
     use super::*;
 
     #[test]
-    fn vector_multiply() {
+    fn vector_mul() {
         let a = Vec2::new(1.0, 2.0);
         let b = Vec2::new(3.0, 6.0);
         let r = a * 3.0;
         assert_eq!(r, b);
+    }
+
+    #[test]
+    #[should_panic]
+    fn vector_div() {
+        let a = Vec2::new(1.0, 2.0);
+        let _ = a / 0.0;
     }
 
     #[test]
@@ -186,4 +199,41 @@ mod linalg_test {
         assert_eq!(a.cross_z(b), c);
     }
 
+    #[test]
+    fn vector_neg() {
+        let a = Vec2::new(1.0, 2.0);
+        let b = Vec2::new(-1.0, -2.0);
+        assert_eq!(-a, b);
+    }
+
+    #[test]
+    fn point_vector_add() {
+        let a = Point::new(1.0, 2.0);
+        let b = Vec2::new(-3.0, 6.0);
+        let c = Point::new(-2.0, 8.0);
+        assert_eq!(a+b, c);
+    }
+
+    #[test]
+    fn point_vector_sub() {
+        let a = Point::new(1.0, 2.0);
+        let b = Vec2::new(-3.0, 6.0);
+        let c = Point::new(4.0, -4.0);
+        assert_eq!(a-b, c);
+    }
+
+    #[test]
+    fn point_sub() {
+        let a = Point::new(1.0, 2.0);
+        let b = Point::new(-3.0, 6.0);
+        let c = Vec2::new(4.0, -4.0);
+        assert_eq!(a-b, c);
+    }
+
+    #[test]
+    fn point_neg() {
+        let a = Point::new(1.0, 2.0);
+        let b = Point::new(-1.0, -2.0);
+        assert_eq!(-a, b);
+    }
 }
