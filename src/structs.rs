@@ -38,8 +38,8 @@ pub struct Bzone {
 pub struct Probability {
     momentum_error: u64,
     probability_error: u64,
-    probability: u64,
-    energy: u64,
+    probability: Vec<f64>,
+    energy: Vec<f64>,
     momentum_samples: i32,
     energy_samples: i32
 }
