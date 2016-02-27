@@ -3,6 +3,7 @@ use std::ops::{Add, Sub, Mul, Div, Neg};
 use std::cmp::PartialEq;
 use std::fmt;
 
+
 #[derive(Debug, Clone, Copy)]
 pub struct Vec2 {
     x: f64,
@@ -24,12 +25,6 @@ impl Vec2 {
     }
     pub fn dot(a: Vec2, b: Vec2) -> f64 {
         a.x * b.x + a.y * b.y
-    }
-    pub fn cross(a: Vec2, b: Vec2) -> f64 {
-        a.x * b.y - a.y * b.x
-    }
-    pub fn cross_z(&self, _rhs: f64) -> Vec2 {
-        Vec2::new(self.y, -self.x) * _rhs
     }
     pub fn len(&self) -> f64 {
         Vec2::dot(*self, *self).sqrt()
@@ -110,6 +105,27 @@ impl Sub for Point {
 
     fn sub(self, _rhs: Point) -> Self::Output {
         Vec2::new(self.x - _rhs.x, self.y - _rhs.y)
+    }
+}
+
+pub trait Cross<RHS = Self> {
+    type Output;
+    fn cross(self, rhs: RHS) -> Self::Output;
+}
+
+impl Cross<f64> for Vec2 {
+    type Output = Self;
+
+    fn cross(self, rhs: f64) -> Self {
+        Self::new(self.y, -self.x) * rhs
+    }
+}
+
+impl Cross for Vec2 {
+    type Output = f64;
+
+    fn cross(self, rhs: Vec2) -> f64 {
+        self.x * rhs.y - self.y * rhs.x
     }
 }
 
@@ -195,7 +211,7 @@ mod linalg_test {
         let a = Vec2::new(1.0, 2.0);
         let b = 2.0;
         let c = Vec2::new(4.0, -2.0);
-        assert_eq!(a.cross_z(b), c);
+        assert_eq!(Vec2::cross(a, b), c);
     }
 
     #[test]
