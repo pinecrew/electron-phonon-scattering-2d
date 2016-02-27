@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 #![allow(non_snake_case)]
 use ini::Ini;
-use std::io::BufReader;
+use std::io::{BufReader, BufWriter};
 use std::io::prelude::*;
 use std::fs::File;
 use linalg::{Vec2, Point};
@@ -48,8 +48,15 @@ impl Files {
         }
         (a, b)
     }
-    pub fn write_probabilities(&self, energies : Vec<f64>, probs : Vec<f64>) {
-        unimplemented!()
+    pub fn write_probabilities(&self, energies : &Vec<f64>, probs : &Vec<f64>) {
+        let file = File::create(&self.result)
+                        .ok()
+                        .expect(&format!("Can't create {} file", self.result));
+        let mut writer = BufWriter::new(file);
+        let it = energies.iter().zip(probs);
+        for (energy, prob) in it {
+            write!(writer, "{} {}\n", energy, prob);
+        }
     }
 }
 

@@ -1,6 +1,9 @@
 extern crate ini;
 use ini::Ini;
 
+use std::thread;
+use std::sync::{Arc, mpsc};
+
 extern crate scattering;
 use scattering::structs::{Files, Probability, Bzone};
 use scattering::linalg::{Vec2, Point};
@@ -17,8 +20,7 @@ fn momentums_with_energy_in_dir(e : f64, theta : f64, samples : usize, precision
         let mut left = Point::from_vec2(step * i as f64);
         let mut right = left + step;
         if (energy(&left) - e) * (energy(&right) - e) < 0.0 {
-
-            while ((right - left).len() > precision) {
+            while (right - left).len() > precision {
                 let middle = left + (right - left) / 2.0;
                 if (energy(&left) - e) * (energy(&middle) - e) < 0.0 {
                     right = middle;
@@ -33,7 +35,7 @@ fn momentums_with_energy_in_dir(e : f64, theta : f64, samples : usize, precision
     ps
 }
 
-fn probability(e : f64, p : &Probability, b : &Bzone) -> f64 {
+fn probability(e : f64, p : Arc<Probability>, b : Arc<Bzone>) -> f64 {
     use std::f64::consts::PI;
     use std::cmp::{min,max};
 
@@ -67,9 +69,9 @@ fn probability(e : f64, p : &Probability, b : &Bzone) -> f64 {
 fn main() {
     let conf = Ini::load_from_file("config.ini").unwrap();
 
-    let prob = Probability::from_config(&conf);
+    let prob = Arc::new(Probability::from_config(&conf));
     let files = Files::from_config(&conf);
-    let bzone = Bzone::from_config(&conf);
+    let bzone = Arc::new(Bzone::from_config(&conf));
 
     let (emin, emax) = get_energy_limits(&bzone);
     let mut energies: Vec<f64> = Vec::with_capacity(prob.energy_samples);
@@ -78,12 +80,29 @@ fn main() {
         let e = emin + (emax - emin) / (prob.energy_samples as f64 - 1.0) * (i as f64);
         energies.push(e);
     }
-    // вот это надо распараллелить
-    for e in energies.clone() {
-        let p = probability(e, &prob, &bzone);
-        println!("{} {}", e, p); // поглазеть просто
-        probs.push(p);
+    let mut thread_list = Vec::new();
+    let (tx, rx) = mpsc::channel::<f64>();
+    for e in &energies {
+        let local_tx = tx.clone();
+        let local_prob = prob.clone();
+        let local_bzone = bzone.clone();
+        let local_e = e.clone();
+        thread_list.push(thread::spawn(move || {
+            let p = probability(local_e, local_prob, local_bzone);
+            println!("{} {}", local_e, p); // поглазеть просто
+            local_tx.send(p)
+                    .ok()
+                    .expect("Can't send data");
+        }));
     }
-
-    files.write_probabilities(energies, probs);
+    for thread in thread_list {
+        let p = rx.recv()
+                  .ok()
+                  .expect("Can't recv data");
+        probs.push(p);
+        thread.join()
+              .ok()
+              .expect("Can't join thread");
+    }
+    files.write_probabilities(&energies, &probs);
 }
