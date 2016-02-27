@@ -23,7 +23,7 @@ pub struct Fields {
     // omega = (omega1, omega2)
     omega: (f64, f64),
     // phi = (phi, phi1, phi2)
-    phi: (f64, f64, f64)
+    phi: f64
 }
 
 pub struct Bzone {
@@ -31,15 +31,13 @@ pub struct Bzone {
     B: Point,
     C: Point,
     D: Point,
-    basis: Vec2,
-    dual_basis: Vec2
+    basis: (Vec2, Vec2),
+    dual_basis: (Vec2, Vec2)
 }
 
 pub struct Probability {
-    momentum_error: u64,
-    probability_error: u64,
-    probability: Vec<f64>,
-    energy: Vec<f64>,
+    momentum_error: f64,
+    probability_error: f64,
     momentum_samples: i32,
     energy_samples: i32
 }
