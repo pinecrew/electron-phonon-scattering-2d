@@ -21,17 +21,17 @@ impl Vec2 {
     fn zero() -> Vec2 {
         Vec2::new(0.0, 0.0)
     }
-    fn dot(&self, _rhs: &Vec2) -> f64 {
-        self.x * _rhs.x + self.y * _rhs.y
+    fn dot(a: Vec2, b: Vec2) -> f64 {
+        a.x * b.x + a.y * b.y
     }
-    fn cross(&self, _rhs: &Vec2) -> f64 {
-        self.x * _rhs.y - self.y * _rhs.x
+    fn cross(a: Vec2, b: Vec2) -> f64 {
+        a.x * b.y - a.y * b.x
     }
     fn cross_z(&self, _rhs: f64) -> Vec2 {
         Vec2::new(self.y, -self.x) * _rhs
     }
     fn len(&self) -> f64 {
-        self.dot(&self).sqrt()
+        Vec2::dot(*self, *self).sqrt()
     }
     fn ort(self) -> Vec2 {
         self / self.len()
@@ -167,7 +167,7 @@ mod linalg_test {
         let a = Vec2::new(1.0, 2.0);
         let b = Vec2::new(-3.0, 6.0);
         let c = 9.0;
-        assert_eq!(a.dot(&b), c);
+        assert_eq!(Vec2::dot(a, b), c);
     }
 
     #[test]
@@ -175,7 +175,7 @@ mod linalg_test {
         let a = Vec2::new(1.0, 2.0);
         let b = Vec2::new(-3.0, 6.0);
         let c = 12.0;
-        assert_eq!(a.cross(&b), c);
+        assert_eq!(Vec2::cross(a, b), c);
     }
 
     #[test]
