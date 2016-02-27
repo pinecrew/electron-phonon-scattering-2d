@@ -1,6 +1,5 @@
-pub mod structs;
-pub mod linalg;
-use linalg::Vec2;
+extern crate scattering;
+use scattering::linalg::Vec2;
 
 fn main() {
     let a = Vec2::new(1.0, 2.0);
