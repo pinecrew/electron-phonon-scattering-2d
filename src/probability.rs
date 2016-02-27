@@ -6,10 +6,8 @@ use scattering::structs::{Files, Probability};
 
 fn main() {
     let conf = Ini::load_from_file("config.ini").unwrap();
-    let prob = Probability::from_config(conf);
-
-    let conf = Ini::load_from_file("config.ini").unwrap();
-    let files = Files::from_config(conf);
+    let prob = Probability::from_config(&conf);
+    let files = Files::from_config(&conf);
 
     // check it!
     println!("{} {} {} {} {}", files.probability, prob.momentum_error,

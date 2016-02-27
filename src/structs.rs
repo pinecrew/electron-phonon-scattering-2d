@@ -12,7 +12,7 @@ pub struct Files {
 }
 
 impl Files {
-    pub fn from_config(conf : Ini) -> Files {
+    pub fn from_config(conf : &Ini) -> Files {
         let section = conf.section(Some("files".to_owned())).unwrap();
         let load_file   : bool = section.get("load_file").unwrap().parse().unwrap();
         let probability : String = section.get("probability").unwrap().parse().unwrap();
@@ -60,7 +60,7 @@ pub struct Probability {
 }
 
 impl Probability {
-    pub fn from_config(conf : Ini) -> Probability {
+    pub fn from_config(conf : &Ini) -> Probability {
         let section = conf.section(Some("probability".to_owned())).unwrap();
         let momentum_error    : f64 = section.get("momentum_error").unwrap().parse().unwrap();
         let probability_error : f64 = section.get("probability_error").unwrap().parse().unwrap();
