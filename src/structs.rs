@@ -1,11 +1,28 @@
 #![allow(dead_code)]
 #![allow(non_snake_case)]
+use ini::Ini;
+
 use linalg::{Vec2, Point};
 
+
 pub struct Files {
-    load_file: bool,
-    probability: String,
-    result: String
+    pub load_file: bool,
+    pub probability: String,
+    pub result: String
+}
+
+impl Files {
+    pub fn from_config(conf : Ini) -> Files {
+        let section = conf.section(Some("files".to_owned())).unwrap();
+        let load_file   : bool = section.get("load_file").unwrap().parse().unwrap();
+        let probability : String = section.get("probability").unwrap().parse().unwrap();
+        let result      : String = section.get("result").unwrap().parse().unwrap();
+        Files {
+            load_file: load_file,
+            probability: probability,
+            result: result
+        }
+    }
 }
 
 pub struct Phonons {
@@ -36,12 +53,27 @@ pub struct Bzone {
 }
 
 pub struct Probability {
-    momentum_error: f64,
-    probability_error: f64,
-    momentum_samples: i32,
-    energy_samples: i32
+    pub momentum_error: f64,
+    pub probability_error: f64,
+    pub momentum_samples: i32,
+    pub energy_samples: i32
 }
 
+impl Probability {
+    pub fn from_config(conf : Ini) -> Probability {
+        let section = conf.section(Some("probability".to_owned())).unwrap();
+        let momentum_error    : f64 = section.get("momentum_error").unwrap().parse().unwrap();
+        let probability_error : f64 = section.get("probability_error").unwrap().parse().unwrap();
+        let momentum_samples  : i32 = section.get("momentum_samples").unwrap().parse().unwrap();
+        let energy_samples    : i32 = section.get("energy_samples").unwrap().parse().unwrap();
+        Probability {
+            momentum_error: momentum_error,
+            probability_error: probability_error,
+            momentum_samples: momentum_samples,
+            energy_samples: energy_samples
+        }
+    }
+}
 pub struct Model {
     dt: f64,
     all_time: f64,
