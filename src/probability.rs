@@ -10,11 +10,16 @@ use scattering::linalg::{Vec2, Point};
 use scattering::material_specific::{energy, energy_gradient, get_energy_limits, pmax};
 
 
-fn momentums_with_energy_in_dir(e : f64, theta : f64, samples : usize, precision : f64, bzone : &Bzone) -> Vec<Point> {
+fn momentums_with_energy_in_dir(e: f64,
+                                theta: f64,
+                                samples: usize,
+                                precision: f64,
+                                bzone: &Bzone)
+                                -> Vec<Point> {
     let dir = Vec2::from_polar(1.0, theta);
     let step = dir * pmax(theta, bzone) / (samples as f64);
 
-    let mut ps : Vec<Point> = Vec::new();
+    let mut ps: Vec<Point> = Vec::new();
 
     for i in 0..samples {
         let mut left = Point::from_vec2(step * i as f64);
@@ -35,20 +40,20 @@ fn momentums_with_energy_in_dir(e : f64, theta : f64, samples : usize, precision
     ps
 }
 
-fn probability(e : f64, p : Arc<Probability>, b : Arc<Bzone>) -> f64 {
+fn probability(e: f64, p: Arc<Probability>, b: Arc<Bzone>) -> f64 {
     use std::f64::consts::PI;
-    use std::cmp::{min,max};
+    use std::cmp::{min, max};
 
-    let mut old : f64 = 0.0;
-    let mut new : f64 = 1.0;
+    let mut old: f64 = 0.0;
+    let mut new: f64 = 1.0;
     let mut n = 500;
     let mut c = 12;
-    while (new-old).abs() / new > p.probability_error && c > 0 {
+    while (new - old).abs() / new > p.probability_error && c > 0 {
         old = new;
         new = 0.0;
 
-        let mut prev : Vec<Point> = Vec::new();
-        let mut curr : Vec<Point> = Vec::new();
+        let mut prev: Vec<Point> = Vec::new();
+        let mut curr: Vec<Point> = Vec::new();
 
         for i in 0..n {
             let theta = (i as f64) / (n as f64) * 2.0 * PI;

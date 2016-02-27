@@ -15,7 +15,7 @@ pub struct Vec2 {
 #[derive(Debug, Clone, Copy)]
 pub struct Point {
     pub x: f64,
-    pub y: f64
+    pub y: f64,
 }
 
 impl Vec2 {
@@ -23,7 +23,10 @@ impl Vec2 {
         Vec2 { x: x, y: y }
     }
     pub fn from_polar(r: f64, theta: f64) -> Vec2 {
-        Vec2 { x: r * f64::cos(theta), y: r * f64::sin(theta) }
+        Vec2 {
+            x: r * f64::cos(theta),
+            y: r * f64::sin(theta),
+        }
     }
     pub fn zero() -> Vec2 {
         Vec2::new(0.0, 0.0)
@@ -82,7 +85,10 @@ impl Point {
         Point { x: x, y: y }
     }
     pub fn from_polar(r: f64, theta: f64) -> Point {
-        Point { x: r * f64::cos(theta), y: r * f64::sin(theta) }
+        Point {
+            x: r * f64::cos(theta),
+            y: r * f64::sin(theta),
+        }
     }
     pub fn zero() -> Point {
         Point::new(0.0, 0.0)
@@ -207,7 +213,7 @@ mod linalg_test {
         let a = Vec2::new(1.0, 2.0);
         let b = Vec2::new(-3.0, 6.0);
         let c = Vec2::new(-2.0, 8.0);
-        assert_eq!(a+b, c);
+        assert_eq!(a + b, c);
     }
 
     #[test]
@@ -215,7 +221,7 @@ mod linalg_test {
         let a = Vec2::new(1.0, 2.0);
         let b = Vec2::new(-3.0, 6.0);
         let c = Vec2::new(4.0, -4.0);
-        assert_eq!(a-b, c);
+        assert_eq!(a - b, c);
     }
 
     #[test]
@@ -256,7 +262,7 @@ mod linalg_test {
         let a = Point::new(1.0, 2.0);
         let b = Vec2::new(-3.0, 6.0);
         let c = Point::new(-2.0, 8.0);
-        assert_eq!(a+b, c);
+        assert_eq!(a + b, c);
     }
 
     #[test]
@@ -264,7 +270,7 @@ mod linalg_test {
         let a = Point::new(1.0, 2.0);
         let b = Vec2::new(-3.0, 6.0);
         let c = Point::new(4.0, -4.0);
-        assert_eq!(a-b, c);
+        assert_eq!(a - b, c);
     }
 
     #[test]
@@ -272,7 +278,7 @@ mod linalg_test {
         let a = Point::new(1.0, 2.0);
         let b = Point::new(-3.0, 6.0);
         let c = Vec2::new(4.0, -4.0);
-        assert_eq!(a-b, c);
+        assert_eq!(a - b, c);
     }
 
     #[test]
@@ -284,7 +290,7 @@ mod linalg_test {
 
     #[test]
     fn vector_parse() {
-        let a : Vec2 = "1 2".parse().unwrap();
+        let a: Vec2 = "1 2".parse().unwrap();
         assert_eq!(a, Vec2::new(1.0, 2.0));
     }
 }

@@ -10,25 +10,25 @@ use linalg::{Vec2, Point};
 pub struct Files {
     pub load_file: bool,
     pub probability: String,
-    pub result: String
+    pub result: String,
 }
 
 impl Files {
-    pub fn from_config(conf : &Ini) -> Files {
+    pub fn from_config(conf: &Ini) -> Files {
         let section = conf.section(Some("files".to_owned())).unwrap();
-        let load_file   : bool = section.get("load_file").unwrap().parse().unwrap();
-        let probability : String = section.get("probability").unwrap().parse().unwrap();
-        let result      : String = section.get("result").unwrap().parse().unwrap();
+        let load_file: bool = section.get("load_file").unwrap().parse().unwrap();
+        let probability: String = section.get("probability").unwrap().parse().unwrap();
+        let result: String = section.get("result").unwrap().parse().unwrap();
         Files {
             load_file: load_file,
             probability: probability,
-            result: result
+            result: result,
         }
     }
     pub fn read_probabilities(&self) -> (Vec<f64>, Vec<f64>) {
         let file = File::open(&self.probability)
-                        .ok()
-                        .expect(&format!("Can't open {} file", self.probability));
+                       .ok()
+                       .expect(&format!("Can't open {} file", self.probability));
         let reader = BufReader::new(file);
         let (mut a, mut b) = (Vec::new(), Vec::new());
         for line in reader.lines().filter_map(|result| result.ok()) {
@@ -36,26 +36,24 @@ impl Files {
             let first = data.next()
                             .expect("Can't get item");
             let second = data.next()
-                            .expect("Can't get item");
+                             .expect("Can't get item");
             a.push(first.parse::<f64>()
-                          .ok()
-                          .expect("Can't parse string")
-            );
+                        .ok()
+                        .expect("Can't parse string"));
             b.push(second.parse::<f64>()
-                          .ok()
-                          .expect("Can't parse string")
-            );
+                         .ok()
+                         .expect("Can't parse string"));
         }
         (a, b)
     }
-    pub fn write_probabilities(&self, energies : &Vec<f64>, probs : &Vec<f64>) {
+    pub fn write_probabilities(&self, energies: &Vec<f64>, probs: &Vec<f64>) {
         let file = File::create(&self.result)
-                        .ok()
-                        .expect(&format!("Can't create {} file", self.result));
+                       .ok()
+                       .expect(&format!("Can't create {} file", self.result));
         let mut writer = BufWriter::new(file);
         let it = energies.iter().zip(probs);
         for (energy, prob) in it {
-            write!(writer, "{} {}\n", energy, prob);
+            let _ = write!(writer, "{} {}\n", energy, prob);
         }
     }
 }
@@ -64,7 +62,7 @@ pub struct Phonons {
     pub beta: f64,
     pub wla_max: f64,
     pub wlo_max: f64,
-    pub T: f64
+    pub T: f64,
 }
 
 pub struct Fields {
@@ -75,7 +73,7 @@ pub struct Fields {
     // omega = (omega1, omega2)
     pub omega: (f64, f64),
     // phi = (phi, phi1, phi2)
-    pub phi: f64
+    pub phi: f64,
 }
 
 pub struct Bzone {
@@ -84,15 +82,15 @@ pub struct Bzone {
     pub C: Point,
     pub D: Point,
     pub basis: (Vec2, Vec2),
-    pub dual_basis: (Vec2, Vec2)
+    pub dual_basis: (Vec2, Vec2),
 }
 
 impl Bzone {
-    pub fn from_config(conf : &Ini) -> Bzone {
+    pub fn from_config(conf: &Ini) -> Bzone {
         let section = conf.section(Some("bzone".to_owned())).unwrap();
-        let A : Point = section.get("A").unwrap().parse().unwrap();
-        let B : Point = section.get("B").unwrap().parse().unwrap();
-        let D : Point = section.get("D").unwrap().parse().unwrap();
+        let A: Point = section.get("A").unwrap().parse().unwrap();
+        let B: Point = section.get("B").unwrap().parse().unwrap();
+        let D: Point = section.get("D").unwrap().parse().unwrap();
 
         let b = B - A;
         let d = D - A;
@@ -110,7 +108,7 @@ impl Bzone {
             C: C,
             D: D,
             basis: (b, d),
-            dual_basis: (b1, d1)
+            dual_basis: (b1, d1),
         }
     }
 }
@@ -119,21 +117,21 @@ pub struct Probability {
     pub momentum_error: f64,
     pub probability_error: f64,
     pub momentum_samples: usize,
-    pub energy_samples: usize
+    pub energy_samples: usize,
 }
 
 impl Probability {
-    pub fn from_config(conf : &Ini) -> Probability {
+    pub fn from_config(conf: &Ini) -> Probability {
         let section = conf.section(Some("probability".to_owned())).unwrap();
-        let momentum_error    : f64 = section.get("momentum_error").unwrap().parse().unwrap();
-        let probability_error : f64 = section.get("probability_error").unwrap().parse().unwrap();
-        let momentum_samples  : usize = section.get("momentum_samples").unwrap().parse().unwrap();
-        let energy_samples    : usize = section.get("energy_samples").unwrap().parse().unwrap();
+        let momentum_error: f64 = section.get("momentum_error").unwrap().parse().unwrap();
+        let probability_error: f64 = section.get("probability_error").unwrap().parse().unwrap();
+        let momentum_samples: usize = section.get("momentum_samples").unwrap().parse().unwrap();
+        let energy_samples: usize = section.get("energy_samples").unwrap().parse().unwrap();
         Probability {
             momentum_error: momentum_error,
             probability_error: probability_error,
             momentum_samples: momentum_samples,
-            energy_samples: energy_samples
+            energy_samples: energy_samples,
         }
     }
 }
@@ -141,59 +139,23 @@ pub struct Model {
     pub dt: f64,
     pub all_time: f64,
     pub threads: u32,
-    pub particles: u32
+    pub particles: u32,
 }
 
 pub struct Plot {
     pub low: f64,
     pub hight: f64,
     pub step: f64,
-    pub var: String
-}
-
-pub struct ExecuteModel {
-    phonons: Phonons,
-    bzone: Bzone,
-    model: Model
-}
-
-impl Plot {
-    fn gen_model(field: &Fields) -> Model {
-        unimplemented!()
-    }
+    pub var: String,
 }
 
 impl Model {
-    fn new(dt: f64, all_time: f64, threads: u32, particles: u32) -> Model {
+    pub fn new(dt: f64, all_time: f64, threads: u32, particles: u32) -> Model {
         Model {
             dt: dt,
             all_time: all_time,
             threads: threads,
-            particles: particles
+            particles: particles,
         }
-    }
-    fn null() -> Model {
-        Model {
-            dt: 0.0,
-            all_time: 0.0,
-            threads: 0,
-            particles: 0
-        }
-    }
-}
-
-impl ExecuteModel {
-    fn new(phonons: Phonons, bzone: Bzone) -> ExecuteModel {
-        ExecuteModel {
-            phonons: phonons,
-            bzone: bzone,
-            model: Model::null(),
-        }
-    }
-    fn set_model(&mut self, model: Model) {
-        self.model = model;
-    }
-    fn run(&self) {
-        unimplemented!()
     }
 }
