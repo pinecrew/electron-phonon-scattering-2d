@@ -280,4 +280,10 @@ mod linalg_test {
         let b = Point::new(-1.0, -2.0);
         assert_eq!(-a, b);
     }
+
+    #[test]
+    fn vector_parse() {
+        let a : Vec2 = "1 2".parse().unwrap();
+        assert_eq!(a, Vec2::new(1.0, 2.0));
+    }
 }
