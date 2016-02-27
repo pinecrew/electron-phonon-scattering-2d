@@ -22,10 +22,13 @@ impl Vec2 {
         Vec2::new(0.0, 0.0)
     }
     fn dot(&self, _rhs: &Vec2) -> f64 {
-        self.x * _rhs.x - self.y * _rhs.y
+        self.x * _rhs.x + self.y * _rhs.y
     }
     fn cross(&self, _rhs: &Vec2) -> f64 {
         self.x * _rhs.y - self.y * _rhs.x
+    }
+    fn cross_z(&self, _rhs: f64) -> Vec2 {
+        Vec2::new(self.y, -self.x) * _rhs
     }
     fn len(&self) -> f64 {
         self.dot(&self).sqrt()
@@ -143,5 +146,44 @@ mod linalg_test {
         assert_eq!(r, b);
     }
 
-    // insert yourt test
+    #[test]
+    fn vector_add() {
+        let a = Vec2::new(1.0, 2.0);
+        let b = Vec2::new(-3.0, 6.0);
+        let c = Vec2::new(-2.0, 8.0);
+        assert_eq!(a+b, c);
+    }
+
+    #[test]
+    fn vector_sub() {
+        let a = Vec2::new(1.0, 2.0);
+        let b = Vec2::new(-3.0, 6.0);
+        let c = Vec2::new(4.0, -4.0);
+        assert_eq!(a-b, c);
+    }
+
+    #[test]
+    fn vector_dot() {
+        let a = Vec2::new(1.0, 2.0);
+        let b = Vec2::new(-3.0, 6.0);
+        let c = 9.0;
+        assert_eq!(a.dot(&b), c);
+    }
+
+    #[test]
+    fn vector_cross() {
+        let a = Vec2::new(1.0, 2.0);
+        let b = Vec2::new(-3.0, 6.0);
+        let c = 12.0;
+        assert_eq!(a.cross(&b), c);
+    }
+
+    #[test]
+    fn vector_cross_z() {
+        let a = Vec2::new(1.0, 2.0);
+        let b = 2.0;
+        let c = Vec2::new(4.0, -2.0);
+        assert_eq!(a.cross_z(b), c);
+    }
+
 }
