@@ -12,6 +12,7 @@ fn main() {
     // check it!
     println!("{} {} {} {} {}", files.probability, prob.momentum_error,
      prob.momentum_samples, prob.probability_error, prob.energy_samples);
+    let _ = files.read_file();
 
     // let (emin, emax) = get_energy_limits(energy, bzone);
     // let mut energies: Vec<f64> = Vec::with_capacity(energy_samples);

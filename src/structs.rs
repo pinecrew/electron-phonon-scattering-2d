@@ -1,7 +1,9 @@
 #![allow(dead_code)]
 #![allow(non_snake_case)]
 use ini::Ini;
-
+use std::io::BufReader;
+use std::io::prelude::*;
+use std::fs::File;
 use linalg::{Vec2, Point};
 
 
@@ -22,6 +24,29 @@ impl Files {
             probability: probability,
             result: result
         }
+    }
+    pub fn read_file(&self) -> (Vec<f64>, Vec<f64>) {
+        let file = File::open(&self.probability)
+                        .ok()
+                        .expect(&format!("Can't open {} file", self.probability));
+        let reader = BufReader::new(file);
+        let (mut a, mut b) = (Vec::new(), Vec::new());
+        for line in reader.lines().filter_map(|result| result.ok()) {
+            let mut data = line.split('\t');
+            let first = data.next()
+                            .expect("Can't get item");
+            let second = data.next()
+                            .expect("Can't get item");
+            a.push(first.parse::<f64>()
+                          .ok()
+                          .expect("Can't parse string")
+            );
+            b.push(second.parse::<f64>()
+                          .ok()
+                          .expect("Can't parse string")
+            );
+        }
+        (a, b)
     }
 }
 
