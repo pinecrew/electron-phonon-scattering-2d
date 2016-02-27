@@ -2,6 +2,7 @@
 use std::ops::{Add, Sub, Mul, Div, Neg};
 use std::cmp::PartialEq;
 use std::fmt;
+use std::str::FromStr;
 
 
 #[derive(Debug, Clone, Copy)]
@@ -158,11 +159,21 @@ macro_rules! same_functional_impl {
                     write!(f, "({}, {})", self.x, self.y)
                 }
             }
+            impl FromStr for $t {
+                type Err = ();
+                fn from_str(s : &str) -> Result<Self, Self::Err> {
+                    let words: Vec<&str> = s.split_whitespace().collect();
+                    let x : f64 = words[0].parse().unwrap();
+                    let y : f64 = words[1].parse().unwrap();
+                    Ok(Self::new(x, y))
+                }
+            }
         )*
     }
 }
 
 same_functional_impl!(Vec2, Point);
+
 
 #[cfg(test)]
 mod linalg_test {

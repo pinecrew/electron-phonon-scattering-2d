@@ -21,7 +21,7 @@ const a : f64 = vf * hbar / eps0 / d;
     * Выражение для энергетического спектра (в декартовых координатах)
     *
 */
-fn energy(p : &Point) -> f64 {
+pub fn energy(p : &Point) -> f64 {
     let root = (1.0 + a * a * p.x * p.x).sqrt();
     eps0 * (root + g * (1.0 - p.y.cos()) / root)
 }
@@ -30,7 +30,7 @@ fn energy(p : &Point) -> f64 {
     * Выражение для энергетического спектра (в полярных координатах)
     *
 */
-fn energy_theta(p : f64, theta : f64) -> f64 {
+pub fn energy_theta(p : f64, theta : f64) -> f64 {
     energy(&Point::from_polar(p, theta))
 }
 
@@ -39,7 +39,7 @@ fn energy_theta(p : f64, theta : f64) -> f64 {
     * Градиент энергии в импульсном пространстве
     *
 */
-fn energy_gradient(p : &Point) -> Vec2 {
+pub fn energy_gradient(p : &Point) -> Vec2 {
     let b = 1.0 + a * a * p.x * p.x;
     let root = b.sqrt();
     Vec2::new(eps0 * a * a * p.x / root * (1.0 - g * (1.0 - p.x.cos()) / b),
@@ -50,7 +50,7 @@ fn energy_gradient(p : &Point) -> Vec2 {
     * Скорость
     *
 */
-fn velocity(p : &Point) -> Vec2 {
+pub fn velocity(p : &Point) -> Vec2 {
     energy_gradient(&p) * (d / hbar / c)
 }
 
@@ -60,7 +60,7 @@ fn velocity(p : &Point) -> Vec2 {
     * Границы первой зоны Бриллюэна
     *
 */
-fn pmax(theta : f64, bzone : Bzone) -> f64 {
+pub fn pmax(theta : f64, bzone : Bzone) -> f64 {
     // Считаем расстояние от начала координат до точки пересечения луча с
     // отрезками
     let OA = bzone.A.position();
@@ -92,7 +92,7 @@ fn pmax(theta : f64, bzone : Bzone) -> f64 {
     * Функция, приводящая квазиимпульс к первой зоне Бриллюэна
     *
 */
-fn to_first_bz(p : Point, bzone : Bzone) -> Point {
+pub fn to_first_bz(p : Point, bzone : Bzone) -> Point {
 
     let pv = p - bzone.A;
 
@@ -103,7 +103,7 @@ fn to_first_bz(p : Point, bzone : Bzone) -> Point {
     p - bzone.basis.0 * n1 - bzone.basis.1 * n2
 }
 
-fn get_energy_limits(bzone : Bzone) -> (f64, f64) {
+pub fn get_energy_limits(bzone : Bzone) -> (f64, f64) {
     let mut emin = 100.0;
     let mut emax = -100.0;
     let n = 1000;

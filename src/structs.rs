@@ -25,7 +25,7 @@ impl Files {
             result: result
         }
     }
-    pub fn read_file(&self) -> (Vec<f64>, Vec<f64>) {
+    pub fn read_probabilities(&self) -> (Vec<f64>, Vec<f64>) {
         let file = File::open(&self.probability)
                         .ok()
                         .expect(&format!("Can't open {} file", self.probability));
@@ -77,11 +77,39 @@ pub struct Bzone {
     pub dual_basis: (Vec2, Vec2)
 }
 
+impl Bzone {
+    pub fn from_config(conf : &Ini) -> Bzone {
+        let section = conf.section(Some("bzone".to_owned())).unwrap();
+        let A : Point = section.get("A").unwrap().parse().unwrap();
+        let B : Point = section.get("B").unwrap().parse().unwrap();
+        let D : Point = section.get("D").unwrap().parse().unwrap();
+
+        let b = B - A;
+        let d = D - A;
+        let C = A + b + d;
+
+        let b2 = b - b.ort() * b.dot(d.ort());
+        let d2 = d - d.ort() * d.dot(b.ort());
+
+        let b1 = b2 / b.dot(b2);
+        let d1 = d2 / d.dot(d2);
+
+        Bzone {
+            A: A,
+            B: B,
+            C: C,
+            D: D,
+            basis: (b, d),
+            dual_basis: (b1, d1)
+        }
+    }
+}
+
 pub struct Probability {
     pub momentum_error: f64,
     pub probability_error: f64,
-    pub momentum_samples: i32,
-    pub energy_samples: i32
+    pub momentum_samples: usize,
+    pub energy_samples: usize
 }
 
 impl Probability {
@@ -89,8 +117,8 @@ impl Probability {
         let section = conf.section(Some("probability".to_owned())).unwrap();
         let momentum_error    : f64 = section.get("momentum_error").unwrap().parse().unwrap();
         let probability_error : f64 = section.get("probability_error").unwrap().parse().unwrap();
-        let momentum_samples  : i32 = section.get("momentum_samples").unwrap().parse().unwrap();
-        let energy_samples    : i32 = section.get("energy_samples").unwrap().parse().unwrap();
+        let momentum_samples  : usize = section.get("momentum_samples").unwrap().parse().unwrap();
+        let energy_samples    : usize = section.get("energy_samples").unwrap().parse().unwrap();
         Probability {
             momentum_error: momentum_error,
             probability_error: probability_error,
