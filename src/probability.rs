@@ -1,10 +1,10 @@
 extern crate ini;
 use ini::Ini;
 
-extern crate threadpool;
-use threadpool::ThreadPool;
+extern crate scoped_threadpool;
+use scoped_threadpool::Pool;
 
-use std::sync::{Arc, mpsc};
+use std::sync::Arc;
 
 extern crate scattering;
 use scattering::structs::{Files, Probability, Bzone};
@@ -85,28 +85,18 @@ fn main() {
         energies.push(e);
     }
 
+    let mut pool = Pool::new(prob.threads as u32);
 
-    let pool = ThreadPool::new(prob.threads);
-
-    let (tx, rx) = mpsc::channel::<(usize, f64)>();
-
-    for i in 0..prob.energy_samples {
-        let tx = tx.clone();
-        let prob = prob.clone();
-        let e = energies[i];
-        let bzone = bzone.clone();
-        pool.execute(move || {
-            let p = probability(e, &prob, &bzone);
-            tx.send((i, p))
-              .ok()
-              .expect("Can't send data");
-        });
-    }
-
-
-    for (i, p) in rx.iter().take(prob.energy_samples) {
-        probs[i] = p;
-    }
+    pool.scoped(|scope| {
+        for (index, item) in probs.iter_mut().enumerate() {
+            let prob = prob.clone();
+            let bzone = bzone.clone();
+            let energy = energies[index];
+            scope.execute(move || {
+                *item = probability(energy, &prob, &bzone);
+            });
+        }
+    });
 
     files.write_probabilities(&energies, &probs);
 }
