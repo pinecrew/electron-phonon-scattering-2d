@@ -51,7 +51,7 @@ impl Files {
         (a, b)
     }
     pub fn write_probabilities(&self, energies: &Vec<f64>, probs: &Vec<f64>) {
-        let file = File::create(&self.result)
+        let file = File::create(&self.probability)
                        .ok()
                        .expect(&format!("Can't create {} file", self.result));
         let mut writer = BufWriter::new(file);
