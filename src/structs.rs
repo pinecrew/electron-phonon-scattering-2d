@@ -6,6 +6,10 @@ use std::io::prelude::*;
 use std::fs::{File, OpenOptions, remove_file};
 use linalg::{Vec2, Point};
 
+#[macro_export]
+macro_rules! get_element {
+    ($c:ident, $i:expr) => ($c.get($i).unwrap().parse().unwrap();)
+}
 
 pub struct Files {
     pub load_file: bool,
@@ -16,9 +20,9 @@ pub struct Files {
 impl Files {
     pub fn from_config(conf: &Ini) -> Files {
         let section = conf.section(Some("files".to_owned())).unwrap();
-        let load_file: bool = section.get("load_file").unwrap().parse().unwrap();
-        let probability: String = section.get("probability").unwrap().parse().unwrap();
-        let result: String = section.get("result").unwrap().parse().unwrap();
+        let load_file: bool = get_element!(section, "load_file");
+        let probability: String = get_element!(section, "probability");
+        let result: String = get_element!(section, "result");
         Files {
             load_file: load_file,
             probability: probability,
@@ -84,7 +88,17 @@ pub struct Phonons {
 
 impl Phonons {
     pub fn from_config(conf : &Ini) -> Phonons {
-        unimplemented!();
+        let section = conf.section(Some("phonons".to_owned())).unwrap();
+        let beta: f64 = get_element!(section, "beta");
+        let wla_max: f64 = get_element!(section, "wla_max");
+        let wlo_max: f64 = get_element!(section, "wlo_max");
+        let T: f64 = get_element!(section, "T");
+        Phonons {
+            beta: beta,
+            wla_max: wla_max,
+            wlo_max: wlo_max,
+            T: T
+        }
     }
 }
 
@@ -100,7 +114,22 @@ pub struct Fields {
 
 impl Fields {
     pub fn from_config(conf : &Ini) -> Fields {
-        unimplemented!();
+        let section = conf.section(Some("fields".to_owned())).unwrap();
+        let E0: Vec2 = get_element!(section, "E0");
+        let E1: Vec2 = get_element!(section, "E1");
+        let E2: Vec2 = get_element!(section, "E2");
+        let B0: f64 = get_element!(section, "B0");
+        let B1: f64 = get_element!(section, "B1");
+        let B2: f64 = get_element!(section, "B2");
+        let omega1: f64 = get_element!(section, "omega1");
+        let omega2: f64 = get_element!(section, "omega2");
+        let phi: f64 = get_element!(section, "phi");
+        Fields {
+            E: (E0, E1, E2),
+            B: (B0, B1, B2),
+            omega: (omega1, omega2),
+            phi: phi
+        }
     }
 }
 
@@ -137,9 +166,9 @@ impl Bzone {
     }
     pub fn from_config(conf: &Ini) -> Bzone {
         let section = conf.section(Some("bzone".to_owned())).unwrap();
-        let A: Point = section.get("A").unwrap().parse().unwrap();
-        let B: Point = section.get("B").unwrap().parse().unwrap();
-        let D: Point = section.get("D").unwrap().parse().unwrap();
+        let A: Point = get_element!(section, "A");
+        let B: Point = get_element!(section, "B");
+        let D: Point = get_element!(section, "D");
         Bzone::new(A, B, D)
     }
 }
@@ -155,11 +184,11 @@ pub struct Probability {
 impl Probability {
     pub fn from_config(conf: &Ini) -> Probability {
         let section = conf.section(Some("probability".to_owned())).unwrap();
-        let momentum_error: f64 = section.get("momentum_error").unwrap().parse().unwrap();
-        let probability_error: f64 = section.get("probability_error").unwrap().parse().unwrap();
-        let momentum_samples: usize = section.get("momentum_samples").unwrap().parse().unwrap();
-        let energy_samples: usize = section.get("energy_samples").unwrap().parse().unwrap();
-        let threads: usize = section.get("threads").unwrap().parse().unwrap();
+        let momentum_error: f64 = get_element!(section, "momentum_error");
+        let probability_error: f64 = get_element!(section, "probability_error");
+        let momentum_samples: usize = get_element!(section, "momentum_samples");
+        let energy_samples: usize = get_element!(section, "energy_samples");
+        let threads: usize = get_element!(section, "threads");
         Probability {
             momentum_error: momentum_error,
             probability_error: probability_error,
@@ -179,7 +208,17 @@ pub struct Plot {
 
 impl Plot {
     pub fn from_config(conf : &Ini) -> Plot {
-        unimplemented!();
+        let section = conf.section(Some("plot".to_owned())).unwrap();
+        let low: f64 = get_element!(section, "low");
+        let hight: f64 = get_element!(section, "high");
+        let step: f64 = get_element!(section, "step");
+        let var: String = get_element!(section, "var");
+        Plot {
+            low: low,
+            hight: hight,
+            step: step,
+            var: var
+        }
     }
     pub fn gen_fields(self, f: &Fields) -> Vec<Fields> {
         // стоит сделать итератор вместо вектора

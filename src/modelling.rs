@@ -59,7 +59,12 @@ impl Model {
         }
     }
     pub fn from_config(conf : &Ini) -> Model {
-        unimplemented!();
+        let section = conf.section(Some("model".to_owned())).unwrap();
+        let dt: f64 = get_element!(section, "dt");
+        let all_time: f64 = get_element!(section, "all_time");
+        let threads: u32 = get_element!(section, "threads");
+        let particles: u32 = get_element!(section, "particles");
+        Model::new(dt, all_time, threads, particles)
     }
     pub fn run(&self, b : &Bzone, f : &Fields, ph : &Phonons, es : &Vec<f64>, ps : &Vec<f64>) -> Res {
         unimplemented!();
