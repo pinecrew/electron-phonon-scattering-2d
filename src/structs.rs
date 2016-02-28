@@ -53,7 +53,7 @@ impl Files {
         let mut writer = BufWriter::new(file);
         let it = energies.iter().zip(probs);
         for (energy, prob) in it {
-            let _ = write!(writer, "{} {}\n", energy, prob);
+            write!(writer, "{} {}\n", energy, prob).unwrap();
         }
     }
     pub fn clean_result(&self) {
@@ -68,12 +68,10 @@ impl Files {
                               .open(&self.result)
                               .unwrap();
         let mut writer = BufWriter::new(file);
-        let _ = write!(writer, "{} {} {} {} {} {} {} {} {} ", fields.E.0, fields.E.1, fields.E.2,
-                       fields.B.0, fields.B.1, fields.B.2, fields.omega.0, fields.omega.1, fields.phi
-        );
-        let _ = write!(writer, "{} {} {} {} {}", result.current, result.surrent_std,
-                       result.optical, result.acoustic, result.tau
-        );
+        write!(writer, "{} {} {} {} {} {} {} {} {} ", fields.E.0, fields.E.1, fields.E.2,
+               fields.B.0, fields.B.1, fields.B.2, fields.omega.0, fields.omega.1, fields.phi).unwrap();
+        write!(writer, "{} {} {} {} {}", result.current, result.surrent_std,
+               result.optical, result.acoustic, result.tau).unwrap();
     }
 }
 
