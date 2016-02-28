@@ -117,6 +117,7 @@ pub struct Probability {
     pub probability_error: f64,
     pub momentum_samples: usize,
     pub energy_samples: usize,
+    pub threads: usize
 }
 
 impl Probability {
@@ -126,11 +127,13 @@ impl Probability {
         let probability_error: f64 = section.get("probability_error").unwrap().parse().unwrap();
         let momentum_samples: usize = section.get("momentum_samples").unwrap().parse().unwrap();
         let energy_samples: usize = section.get("energy_samples").unwrap().parse().unwrap();
+        let threads: usize = section.get("threads").unwrap().parse().unwrap();
         Probability {
             momentum_error: momentum_error,
             probability_error: probability_error,
             momentum_samples: momentum_samples,
             energy_samples: energy_samples,
+            threads: threads
         }
     }
 }

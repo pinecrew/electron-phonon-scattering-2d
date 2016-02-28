@@ -1,7 +1,9 @@
 extern crate ini;
 use ini::Ini;
 
-use std::thread;
+extern crate threadpool;
+use threadpool::ThreadPool;
+
 use std::sync::{Arc, mpsc};
 
 extern crate scattering;
@@ -83,7 +85,9 @@ fn main() {
         energies.push(e);
     }
 
-    let mut thread_list = Vec::new();
+
+    let pool = ThreadPool::new(prob.threads);
+
     let (tx, rx) = mpsc::channel::<(usize, f64)>();
 
     for i in 0..prob.energy_samples {
@@ -91,22 +95,18 @@ fn main() {
         let prob = prob.clone();
         let e = energies[i];
         let bzone = bzone.clone();
-        thread_list.push(thread::spawn(move || {
+        pool.execute(move || {
             let p = probability(e, &prob, &bzone);
             tx.send((i, p))
               .ok()
               .expect("Can't send data");
-        }));
+        });
     }
 
-    for thread in thread_list {
-        let (i, p) = rx.recv()
-                       .ok()
-                       .expect("Can't recv data");
+
+    for (i, p) in rx.iter().take(prob.energy_samples) {
         probs[i] = p;
-        thread.join()
-              .ok()
-              .expect("Can't join thread");
     }
+
     files.write_probabilities(&energies, &probs);
 }

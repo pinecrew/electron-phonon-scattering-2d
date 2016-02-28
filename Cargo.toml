@@ -8,6 +8,7 @@ name = "scattering"
 
 [dependencies]
 rust-ini = "0.9"
+threadpool = "0.2.1"
 
 [[bin]]
 name = "probability"
