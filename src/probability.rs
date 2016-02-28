@@ -36,7 +36,7 @@ fn momentums_with_energy_in_dir(e: f64, theta: f64, samples: usize,
     ps
 }
 
-fn probability(e: f64, p: Arc<Probability>, b: Arc<Bzone>) -> f64 {
+fn probability(e: f64, p: &Probability, b: &Bzone) -> f64 {
     use std::f64::consts::PI;
     use std::cmp::min;
 
@@ -71,36 +71,39 @@ fn main() {
     let conf = Ini::load_from_file("config.ini").unwrap();
 
     let prob = Arc::new(Probability::from_config(&conf));
-    let files = Files::from_config(&conf);
     let bzone = Arc::new(Bzone::from_config(&conf));
+    let files = Files::from_config(&conf);
 
     let (emin, emax) = get_energy_limits(&bzone);
     let mut energies: Vec<f64> = Vec::with_capacity(prob.energy_samples);
-    let mut probs: Vec<f64> = Vec::with_capacity(prob.energy_samples);
+    let mut probs: Vec<f64> = vec![0.0; prob.energy_samples];
+
     for i in 0..prob.energy_samples {
         let e = emin + (emax - emin) / (prob.energy_samples as f64 - 1.0) * (i as f64);
         energies.push(e);
     }
+
     let mut thread_list = Vec::new();
-    let (tx, rx) = mpsc::channel::<f64>();
-    for e in &energies {
-        let local_tx = tx.clone();
-        let local_prob = prob.clone();
-        let local_bzone = bzone.clone();
-        let local_e = e.clone();
+    let (tx, rx) = mpsc::channel::<(usize, f64)>();
+
+    for i in 0..prob.energy_samples {
+        let tx = tx.clone();
+        let prob = prob.clone();
+        let e = energies[i];
+        let bzone = bzone.clone();
         thread_list.push(thread::spawn(move || {
-            let p = probability(local_e, local_prob, local_bzone);
-            println!("{} {}", local_e, p); // поглазеть просто
-            local_tx.send(p)
-                    .ok()
-                    .expect("Can't send data");
+            let p = probability(e, &prob, &bzone);
+            tx.send((i, p))
+              .ok()
+              .expect("Can't send data");
         }));
     }
+
     for thread in thread_list {
-        let p = rx.recv()
-                  .ok()
-                  .expect("Can't recv data");
-        probs.push(p);
+        let (i, p) = rx.recv()
+                       .ok()
+                       .expect("Can't recv data");
+        probs[i] = p;
         thread.join()
               .ok()
               .expect("Can't join thread");
