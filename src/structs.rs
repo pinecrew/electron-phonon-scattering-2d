@@ -3,7 +3,7 @@
 use ini::Ini;
 use std::io::{BufReader, BufWriter};
 use std::io::prelude::*;
-use std::fs::File;
+use std::fs::{File, OpenOptions, remove_file};
 use linalg::{Vec2, Point};
 
 
@@ -57,10 +57,23 @@ impl Files {
         }
     }
     pub fn clean_result(&self) {
-        unimplemented!();
+        remove_file(&self.result)
+            .ok()
+            .expect(&format!("Can't remove {} file", self.result));
     }
     pub fn append_result_line(&self, fields : &Fields, result : &Res) {
-        unimplemented!();
+        let file = OpenOptions::new()
+                              .write(true)
+                              .append(true)
+                              .open(&self.result)
+                              .unwrap();
+        let mut writer = BufWriter::new(file);
+        let _ = write!(writer, "{} {} {} {} {} {} {} {} {} ", fields.E.0, fields.E.1, fields.E.2,
+                       fields.B.0, fields.B.1, fields.B.2, fields.omega.0, fields.omega.1, fields.phi
+        );
+        let _ = write!(writer, "{} {} {} {} {}", result.current, result.surrent_std,
+                       result.optical, result.acoustic, result.tau
+        );
     }
 }
 
