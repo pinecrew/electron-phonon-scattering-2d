@@ -56,6 +56,12 @@ impl Files {
             let _ = write!(writer, "{} {}\n", energy, prob);
         }
     }
+    pub fn clean_result(&self) {
+        unimplemented!();
+    }
+    pub fn append_result_line(&self, fields : &Fields, result : &Res) {
+        unimplemented!();
+    }
 }
 
 pub struct Phonons {
@@ -63,6 +69,12 @@ pub struct Phonons {
     pub wla_max: f64,
     pub wlo_max: f64,
     pub T: f64,
+}
+
+impl Phonons {
+    pub fn from_config(conf : &Ini) -> Phonons {
+        unimplemented!();
+    }
 }
 
 pub struct Fields {
@@ -75,6 +87,13 @@ pub struct Fields {
     pub phi: f64,
 }
 
+impl Fields {
+    pub fn from_config(conf : &Ini) -> Fields {
+        unimplemented!();
+    }
+}
+
+
 pub struct Bzone {
     pub A: Point,
     pub B: Point,
@@ -85,12 +104,7 @@ pub struct Bzone {
 }
 
 impl Bzone {
-    pub fn from_config(conf: &Ini) -> Bzone {
-        let section = conf.section(Some("bzone".to_owned())).unwrap();
-        let A: Point = section.get("A").unwrap().parse().unwrap();
-        let B: Point = section.get("B").unwrap().parse().unwrap();
-        let D: Point = section.get("D").unwrap().parse().unwrap();
-
+    pub fn new(A : Point, B : Point, D : Point) -> Bzone {
         let b = B - A;
         let d = D - A;
         let C = A + b + d;
@@ -107,8 +121,15 @@ impl Bzone {
             C: C,
             D: D,
             basis: (b, d),
-            dual_basis: (b1, d1),
+            dual_basis: (b1, d1)
         }
+    }
+    pub fn from_config(conf: &Ini) -> Bzone {
+        let section = conf.section(Some("bzone".to_owned())).unwrap();
+        let A: Point = section.get("A").unwrap().parse().unwrap();
+        let B: Point = section.get("B").unwrap().parse().unwrap();
+        let D: Point = section.get("D").unwrap().parse().unwrap();
+        Bzone::new(A, B, D)
     }
 }
 
@@ -144,11 +165,35 @@ pub struct Model {
     pub particles: u32,
 }
 
+impl Model {
+    pub fn from_config(conf : &Ini) -> Model {
+        unimplemented!();
+    }
+}
+
 pub struct Plot {
     pub low: f64,
     pub hight: f64,
     pub step: f64,
     pub var: String,
+}
+
+impl Plot {
+    pub fn from_config(conf : &Ini) -> Plot {
+        unimplemented!();
+    }
+    pub fn gen_fields(self, f: &Fields) -> Vec<Fields> {
+        // стоит сделать итератор вместо вектора
+        unimplemented!();
+    }
+}
+
+pub struct Res {
+    pub current: Vec2,
+    pub surrent_std: Vec2,
+    pub optical: f64,
+    pub acoustic: f64,
+    pub tau: f64
 }
 
 impl Model {
@@ -159,5 +204,8 @@ impl Model {
             threads: threads,
             particles: particles,
         }
+    }
+    pub fn run(&self, b : &Bzone, f : &Fields, ph : &Phonons, es : &Vec<f64>, ps : &Vec<f64>) -> Res {
+        unimplemented!();
     }
 }

@@ -51,16 +51,15 @@ fn probability(e: f64, p: &Probability, b: &Bzone) -> f64 {
         new = 0.0;
 
         let mut prev: Vec<Point> = Vec::new();
-        let mut curr: Vec<Point> = Vec::new();
 
         for i in 0..n {
             let theta = (i as f64) / (n as f64) * 2.0 * PI;
-            curr = momentums_with_energy_in_dir(e, theta, p.momentum_samples, p.momentum_error, &b);
+            let curr = momentums_with_energy_in_dir(e, theta, p.momentum_samples, p.momentum_error, &b);
             let l = min(curr.len(), prev.len());
             for j in 0..l {
                 new += (prev[j] - curr[j]).len() / energy_gradient(&curr[j]).len();
             }
-            std::mem::swap(&mut curr, &mut prev);
+            prev = curr;
         }
         n *= 2;
         c -= 1;
