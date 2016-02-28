@@ -68,15 +68,15 @@ pub fn pmax(theta: f64, bzone: &Bzone) -> f64 {
 }
 
 // Функция, приводящая квазиимпульс к первой зоне Бриллюэна
-pub fn to_first_bz(p: Point, bzone: Bzone) -> Point {
+pub fn to_first_bz(p: &Point, bzone: &Bzone) -> Point {
 
-    let pv = p - bzone.A;
+    let pv = *p - bzone.A;
 
     // находим разложение по базису, используя взаимный базис
     let n1 = pv.dot(bzone.dual_basis.0).floor();
     let n2 = pv.dot(bzone.dual_basis.1).floor();
 
-    p - bzone.basis.0 * n1 - bzone.basis.1 * n2
+    *p - bzone.basis.0 * n1 - bzone.basis.1 * n2
 }
 
 pub fn get_energy_limits(bzone: &Bzone) -> (f64, f64) {
@@ -98,4 +98,31 @@ pub fn get_energy_limits(bzone: &Bzone) -> (f64, f64) {
         }
     }
     (emin, emax)
+}
+
+#[cfg_attr(rustfmt, rustfmt_skip)]
+pub fn momentums_with_energy_in_dir(e: f64, theta: f64, samples: usize,
+                                precision: f64, bzone: &Bzone) -> Vec<Point> {
+    let dir = Vec2::from_polar(1.0, theta);
+    let step = dir * pmax(theta, bzone) / (samples as f64);
+
+    let mut ps: Vec<Point> = Vec::new();
+
+    for i in 0..samples {
+        let mut left = Point::from_vec2(step * i as f64);
+        let mut right = left + step;
+        if (energy(&left) - e) * (energy(&right) - e) < 0.0 {
+            while (right - left).len() > precision {
+                let middle = left + (right - left) / 2.0;
+                if (energy(&left) - e) * (energy(&middle) - e) < 0.0 {
+                    right = middle;
+                } else {
+                    left = middle;
+                }
+            }
+
+            ps.push(left + (right - left) / 2.0);
+        }
+    }
+    ps
 }

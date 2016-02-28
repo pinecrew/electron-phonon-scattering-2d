@@ -223,7 +223,6 @@ impl Plot {
         // стоит сделать итератор вместо вектора
         let mut res : Vec<Fields> = Vec::new();
         let n = ((self.high - self.low) / self.step) as usize;
-        println!("{}", n);
         for i in 0..n {
             let mut fields = f.clone();
             match self.var.as_ref() {
