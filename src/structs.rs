@@ -36,7 +36,7 @@ impl Files {
         let reader = BufReader::new(file);
         let (mut a, mut b) = (Vec::new(), Vec::new());
         for line in reader.lines().filter_map(|result| result.ok()) {
-            let mut data = line.split('\t');
+            let mut data = line.split_whitespace();
             let first = data.next()
                             .expect("Can't get item");
             let second = data.next()
@@ -100,6 +100,7 @@ impl Phonons {
     }
 }
 
+#[derive(Clone)]
 pub struct Fields {
     // E = (E0, E1, E2)
     pub E: (Vec2, Vec2, Vec2),
@@ -199,7 +200,7 @@ impl Probability {
 
 pub struct Plot {
     pub low: f64,
-    pub hight: f64,
+    pub high: f64,
     pub step: f64,
     pub var: String,
 }
@@ -208,19 +209,35 @@ impl Plot {
     pub fn from_config(conf : &Ini) -> Plot {
         let section = conf.section(Some("plot".to_owned())).unwrap();
         let low: f64 = get_element!(section, "low");
-        let hight: f64 = get_element!(section, "high");
+        let high: f64 = get_element!(section, "high");
         let step: f64 = get_element!(section, "step");
         let var: String = get_element!(section, "var");
         Plot {
             low: low,
-            hight: hight,
+            high: high,
             step: step,
             var: var
         }
     }
-    pub fn gen_fields(self, f: &Fields) -> Vec<Fields> {
+    pub fn gen_fields(&self, f: &Fields) -> Vec<Fields> {
         // стоит сделать итератор вместо вектора
-        unimplemented!();
+        let mut res : Vec<Fields> = Vec::new();
+        let n = ((self.high - self.low) / self.step) as usize;
+        println!("{}", n);
+        for i in 0..n {
+            let mut fields = f.clone();
+            match self.var.as_ref() {
+                "E0.x" => fields.E.0.x = self.low + self.step * i as f64,
+                "E0.y" => fields.E.0.y = self.low + self.step * i as f64,
+                "E1.x" => fields.E.1.x = self.low + self.step * i as f64,
+                "E1.y" => fields.E.1.y = self.low + self.step * i as f64,
+                "E2.x" => fields.E.2.x = self.low + self.step * i as f64,
+                "E2.y" => fields.E.2.y = self.low + self.step * i as f64,
+                _ => println!("something went wrong"),
+            }
+            res.push(fields);
+        }
+        res
     }
 }
 
