@@ -2,7 +2,8 @@ extern crate ini;
 use ini::Ini;
 
 extern crate scattering;
-use scattering::structs::{Files, Bzone, Fields, Plot, Model, Phonons};
+use scattering::structs::{Files, Bzone, Fields, Plot, Phonons};
+use scattering::modelling::Model;
 
 fn main() {
     let conf = Ini::load_from_file("config.ini").unwrap();
