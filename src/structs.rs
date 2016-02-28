@@ -70,7 +70,7 @@ impl Files {
         let mut writer = BufWriter::new(file);
         write!(writer, "{} {} {} {} {} {} {} {} {} ", fields.E.0, fields.E.1, fields.E.2,
                fields.B.0, fields.B.1, fields.B.2, fields.omega.0, fields.omega.1, fields.phi).unwrap();
-        write!(writer, "{} {} {} {} {}", result.current, result.surrent_std,
+        write!(writer, "{} {} {} {} {}\n", result.current, result.surrent_std,
                result.optical, result.acoustic, result.tau).unwrap();
     }
 }
