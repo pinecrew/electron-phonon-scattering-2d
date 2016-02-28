@@ -61,9 +61,7 @@ impl Files {
         }
     }
     pub fn clean_result(&self) {
-        remove_file(&self.result)
-            .ok()
-            .expect(&format!("Can't remove {} file", self.result));
+        let _ = remove_file(&self.result);
     }
     pub fn append_result_line(&self, fields : &Fields, result : &Res) {
         let file = OpenOptions::new()
