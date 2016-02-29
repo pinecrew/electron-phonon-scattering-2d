@@ -66,6 +66,7 @@ impl Files {
     }
     pub fn append_result_line(&self, fields : &Fields, result : &EnsembleStats) {
         let file = OpenOptions::new()
+                              .create(true)
                               .write(true)
                               .append(true)
                               .open(&self.result)
