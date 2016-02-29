@@ -29,7 +29,7 @@ impl EnsembleStats {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ParticleStats {
     average_speed: Vec2,
     optical: u32,

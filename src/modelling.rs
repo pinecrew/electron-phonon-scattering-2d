@@ -3,12 +3,15 @@ use structs::{Bzone, Fields, Plot, Phonons};
 use linalg::{Point, Vec2, Cross};
 use material_specific::{velocity, energy, to_first_bz, momentums_with_energy_in_dir};
 use stats::{ParticleStats, EnsembleStats};
+use time::get_time;
+use scoped_threadpool::Pool;
+
 
 struct Rng {
     x: u32,
     y: u32,
     z: u32,
-    w: u32
+    w: u32,
 }
 
 impl Rng {
@@ -17,7 +20,7 @@ impl Rng {
             x: seed,
             y: 362_436_069,
             z: 521_288_629,
-            w: 88_675_123
+            w: 88_675_123,
         }
     }
     pub fn rand(&mut self) -> u32 {
@@ -33,8 +36,9 @@ impl Rng {
     }
 }
 
-fn runge<F>(p : &Point, force : F, t : f64, dt : f64) -> Point
-    where F : Fn(&Point, f64) -> Vec2 {
+fn runge<F>(p: &Point, force: F, t: f64, dt: f64) -> Point
+    where F: Fn(&Point, f64) -> Vec2
+{
 
     let k1 = force(p, t);
     let k2 = force(&(*p + k1 * dt / 2.0), t + dt / 2.0);
@@ -44,7 +48,7 @@ fn runge<F>(p : &Point, force : F, t : f64, dt : f64) -> Point
     *p + (k1 + k2 * 2.0 + k3 * 2.0 + k4) * dt / 6.0
 }
 
-fn get_probability(e : f64, es : &Vec<f64>, ps : &Vec<f64>) -> f64 {
+fn get_probability(e: f64, es: &Vec<f64>, ps: &Vec<f64>) -> f64 {
     let step = es[1] - es[0];
     let pos = (e - es[0]) / step;
     if pos < 0.0 || pos + 1.0 > ps.len() as f64 {
@@ -52,19 +56,22 @@ fn get_probability(e : f64, es : &Vec<f64>, ps : &Vec<f64>) -> f64 {
     }
     let i = pos.floor() as usize;
     let w = pos - pos.floor();
-    ps[i] * (1.0 - w) + ps[i+1] * w
+    ps[i] * (1.0 - w) + ps[i + 1] * w
 }
 
 #[test]
 fn test_probability() {
-    let es = vec![0.0,0.5,1.0];
-    let ps = vec![1.0,2.0,2.0];
-    assert_eq!(get_probability(0.25,&es,&ps), 1.5);
-    assert_eq!(get_probability(0.75,&es,&ps), 2.0);
-    assert_eq!(get_probability(-1.0,&es,&ps), 0.0);
-    assert_eq!(get_probability(1.1,&es,&ps), 0.0);
+    let es = vec![0.0, 0.5, 1.0];
+    let ps = vec![1.0, 2.0, 2.0];
+    assert_eq!(get_probability(0.25, &es, &ps), 1.5);
+    assert_eq!(get_probability(0.75, &es, &ps), 2.0);
+    assert_eq!(get_probability(-1.0, &es, &ps), 0.0);
+    assert_eq!(get_probability(1.1, &es, &ps), 0.0);
 }
 
+fn init_dist(r1: f64, r2: f64) -> Point {
+    unimplemented!();
+}
 
 pub struct Model {
     pub dt: f64,
@@ -82,7 +89,7 @@ impl Model {
             particles: particles,
         }
     }
-    pub fn from_config(conf : &Ini) -> Model {
+    pub fn from_config(conf: &Ini) -> Model {
         let section = conf.section(Some("model".to_owned())).unwrap();
         let dt: f64 = get_element!(section, "dt");
         let all_time: f64 = get_element!(section, "all_time");
@@ -91,29 +98,68 @@ impl Model {
         Model::new(dt, all_time, threads, particles)
     }
 
-    pub fn run(&self, b : &Bzone, f : &Fields, ph : &Phonons, es : &Vec<f64>, ps : &Vec<f64>) -> EnsembleStats {
-        unimplemented!();
+    pub fn run(&self,
+               b: &Bzone,
+               f: &Fields,
+               ph: &Phonons,
+               es: &Vec<f64>,
+               ps: &Vec<f64>)
+               -> EnsembleStats {
+        let mut rng = Rng::new(get_time().nsec as u32);
+        let mut init_condition: Vec<Point> = Vec::with_capacity(self.particles as usize);
+        let mut seed: Vec<u32> = Vec::with_capacity(self.particles as usize);
+
+        for j in 0..self.particles as usize {
+            init_condition[j] = init_dist(rng.uniform(), rng.uniform());
+            seed[j] = rng.rand();
+        };
+
+        let mut ensemble : Vec<ParticleStats> = vec![ParticleStats::new(Vec2::zero(), 0, 0, 0.0); self.particles as usize];
+        let mut pool = Pool::new(self.threads as u32);
+
+        pool.scoped(|scope| {
+                for (index, item) in ensemble.iter_mut().enumerate() {
+                    let f = f.clone();
+                    let b = b.clone();
+                    let ph = ph.clone();
+                    let es = es.clone();
+                    let ph = ph.clone();
+                    let ic = init_condition[index];
+                    let s = seed[index];
+                    scope.execute(move || {
+                        *item = self.one_particle(ic, s, &b, &f, &ph, &es, &ps);
+                    });
+                }
+            });
+
+        EnsembleStats::from_ensemble(&ensemble)
     }
 
-    fn one_particle(&self, init_condition : Point, seed : u32, b : &Bzone, f : &Fields, ph : &Phonons, es : &Vec<f64>, ps : &Vec<f64>) -> ParticleStats {
+    fn one_particle(&self,
+                    init_condition: Point,
+                    seed: u32,
+                    b: &Bzone,
+                    f: &Fields,
+                    ph: &Phonons,
+                    es: &Vec<f64>,
+                    ps: &Vec<f64>)
+                    -> ParticleStats {
         use std::f64::consts::PI;
 
         let mut rng = Rng::new(seed);
         let mut p = init_condition;
 
         let mut t = 0.0;
-        let mut wsum : f64 = 0.0;
+        let mut wsum: f64 = 0.0;
 
         let mut n_ac = 0;
         let mut n_opt = 0;
         let mut int_v_dt = Vec2::zero();
 
-        let force = |p : &Point, t : f64| -> Vec2 {
-            f.E.0 + f.E.1 * (f.omega.0 * t).cos() +
-            f.E.2 * (f.omega.1 * t + f.phi).cos() +
-            velocity(p).cross(
-            f.B.0 +  f.B.1 * (f.omega.0 * t).cos() +
-            f.B.2 * (f.omega.1 * t + f.phi).cos())
+        let force = |p: &Point, t: f64| -> Vec2 {
+            f.E.0 + f.E.1 * (f.omega.0 * t).cos() + f.E.2 * (f.omega.1 * t + f.phi).cos() +
+            velocity(p).cross(f.B.0 + f.B.1 * (f.omega.0 * t).cos() +
+                              f.B.2 * (f.omega.1 * t + f.phi).cos())
         };
 
         let mut r = -rng.uniform().ln();
@@ -124,7 +170,7 @@ impl Model {
 
             p = runge(&p, &force, t, self.dt); // решаем уравнения движения
 
-            /* приводим импульс к зоне */
+            // приводим импульс к зоне
             p = to_first_bz(&p, b);
 
             t += self.dt;
