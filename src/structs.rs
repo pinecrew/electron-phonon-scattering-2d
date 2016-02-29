@@ -3,7 +3,7 @@
 use ini::Ini;
 use std::io::{BufReader, BufWriter};
 use std::io::prelude::*;
-use std::fs::{File, OpenOptions, remove_file};
+use std::fs::{File, OpenOptions, remove_file, };
 use linalg::{Vec2, Point};
 use stats::EnsembleStats;
 
@@ -142,7 +142,7 @@ impl Fields {
     }
 }
 
-
+#[derive(Clone)]
 pub struct Bzone {
     pub A: Point,
     pub B: Point,

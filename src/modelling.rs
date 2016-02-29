@@ -1,7 +1,8 @@
 use ini::Ini;
 use structs::{Bzone, Fields, Plot, Phonons};
 use linalg::{Point, Vec2, Cross};
-use material_specific::{velocity, energy, to_first_bz, momentums_with_energy_in_dir};
+use material_specific::{velocity, energy, to_first_bz, momentums_with_energy_in_dir, energy_theta,
+                        pmax};
 use stats::{ParticleStats, EnsembleStats};
 use time::get_time;
 use scoped_threadpool::Pool;
@@ -69,19 +70,99 @@ fn test_probability() {
     assert_eq!(get_probability(1.1, &es, &ps), 0.0);
 }
 
-fn init_dist(r1: f64, r2: f64) -> Point {
-    unimplemented!();
+struct BolzmannDistrib {
+    T: f64,
+    angle_distrib: Vec<f64>,
+    b: Bzone,
+}
+
+impl BolzmannDistrib {
+    pub fn new(T: f64, b: &Bzone) -> BolzmannDistrib {
+        use std::f64::consts::PI;
+        let n = 1000;
+        let mut angle_distrib: Vec<f64> = vec![0.0; n];
+        for i in 0..n - 1 {
+            let theta = 2.0 * PI * i as f64 / n as f64;
+            let pm = pmax(theta, &b);
+            angle_distrib[i + 1] = angle_distrib[i];
+            for j in 0..n {
+                let p = pm * j as f64 / (n - 1) as f64;
+                angle_distrib[i + 1] += (-energy_theta(p, theta) / T).exp() * pm / (n - 1) as f64;
+            }
+        }
+        for i in 0..n {
+            angle_distrib[i] /= angle_distrib[n - 1];
+        }
+        BolzmannDistrib {
+            T: T,
+            angle_distrib: angle_distrib,
+            b: (*b).clone(),
+        }
+    }
+    pub fn make_dist(&self, n: usize) -> Vec<Point> {
+        use time::get_time;
+        let mut rng = Rng::new(get_time().nsec as u32);
+        let mut points : Vec<Point> = Vec::with_capacity(n);
+        for i in 0..n {
+            let theta = self.angle(rng.uniform());
+            let p = self.momentum(theta, rng.uniform());
+            points.push(p);
+        }
+        points
+    }
+    fn momentum(&self, theta: f64, r: f64) -> Point {
+        let n = 1000;
+        let mut dist = vec![0.0; n];
+        let pm = pmax(theta, &self.b);
+        for i in 0..n - 1 {
+            let p = pm * i as f64 / (n - 1) as f64;
+            dist[i + 1] = dist[i] + (-energy_theta(p, theta) / self.T).exp() * pm / (n - 1) as f64;
+        }
+        for i in 0..n {
+            dist[i] /= dist[n - 1];
+        }
+        let mut i = 0;
+        let mut j = dist.len() - 1;
+
+        while j - i > 1 {
+            let m = (i + j) / 2;
+            if dist[m] > r {
+                j = m;
+            } else {
+                i = m;
+            }
+        }
+        let w = (r - dist[i]) / (dist[j] - dist[i]);
+        let p = (i as f64 + w) / (n - 1) as f64 * pm;
+        Point::from_polar(p, theta)
+    }
+    fn angle(&self, r: f64) -> f64 {
+        use std::f64::consts::PI;
+        let mut i = 0;
+        let mut j = self.angle_distrib.len() - 1;
+
+        while j - i > 1 {
+            let m = (i + j) / 2;
+            if self.angle_distrib[m] > r {
+                j = m;
+            } else {
+                i = m;
+            }
+        }
+        let w = (r - self.angle_distrib[i]) / (self.angle_distrib[j] - self.angle_distrib[i]);
+        2.0 * PI * (i as f64 + w)
+    }
 }
 
 pub struct Model {
     pub dt: f64,
     pub all_time: f64,
     pub threads: u32,
-    pub particles: u32,
+    pub particles: usize,
 }
 
 impl Model {
-    pub fn new(dt: f64, all_time: f64, threads: u32, particles: u32) -> Model {
+    pub fn new(dt: f64, all_time: f64, threads: u32, particles: usize) -> Model {
         Model {
             dt: dt,
             all_time: all_time,
@@ -94,7 +175,7 @@ impl Model {
         let dt: f64 = get_element!(section, "dt");
         let all_time: f64 = get_element!(section, "all_time");
         let threads: u32 = get_element!(section, "threads");
-        let particles: u32 = get_element!(section, "particles");
+        let particles: usize = get_element!(section, "particles");
         Model::new(dt, all_time, threads, particles)
     }
 
@@ -105,32 +186,33 @@ impl Model {
                es: &Vec<f64>,
                ps: &Vec<f64>)
                -> EnsembleStats {
+        let bd = BolzmannDistrib::new(ph.T, &b);
+        let init_condition = bd.make_dist(self.particles);
+        let mut seed: Vec<u32> = vec![0u32; self.particles];
+
         let mut rng = Rng::new(get_time().nsec as u32);
-        let mut init_condition: Vec<Point> = Vec::with_capacity(self.particles as usize);
-        let mut seed: Vec<u32> = Vec::with_capacity(self.particles as usize);
-
         for j in 0..self.particles as usize {
-            init_condition[j] = init_dist(rng.uniform(), rng.uniform());
             seed[j] = rng.rand();
-        };
+        }
 
-        let mut ensemble : Vec<ParticleStats> = vec![ParticleStats::new(Vec2::zero(), 0, 0, 0.0); self.particles as usize];
+        let mut ensemble: Vec<ParticleStats> =
+            vec![ParticleStats::new(Vec2::zero(), 0, 0, 0.0); self.particles as usize];
         let mut pool = Pool::new(self.threads as u32);
 
         pool.scoped(|scope| {
-                for (index, item) in ensemble.iter_mut().enumerate() {
-                    let f = f.clone();
-                    let b = b.clone();
-                    let ph = ph.clone();
-                    let es = es.clone();
-                    let ph = ph.clone();
-                    let ic = init_condition[index];
-                    let s = seed[index];
-                    scope.execute(move || {
-                        *item = self.one_particle(ic, s, &b, &f, &ph, &es, &ps);
-                    });
-                }
-            });
+            for (index, item) in ensemble.iter_mut().enumerate() {
+                let f = f.clone();
+                let b = b.clone();
+                let ph = ph.clone();
+                let es = es.clone();
+                let ph = ph.clone();
+                let ic = init_condition[index];
+                let s = seed[index];
+                scope.execute(move || {
+                    *item = self.one_particle(ic, s, &b, &f, &ph, &es, &ps);
+                });
+            }
+        });
 
         EnsembleStats::from_ensemble(&ensemble)
     }
