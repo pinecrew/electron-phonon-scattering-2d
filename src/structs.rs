@@ -113,6 +113,20 @@ pub struct Fields {
 }
 
 impl Fields {
+    pub fn new(E: (Vec2, Vec2, Vec2), B: (f64, f64, f64), omega: (f64, f64), phi: f64) -> Fields {
+        Fields {
+            E: E,
+            B: B,
+            omega: omega,
+            phi: phi
+        }
+    }
+    pub fn zero() -> Fields {
+        Fields::new(
+            (Vec2::zero(), Vec2::zero(), Vec2::zero()),
+            (0.0, 0.0, 0.0), (0.0, 0.0), 0.0
+        )
+    }
     pub fn from_config(conf : &Ini) -> Fields {
         let section = conf.section(Some("fields".to_owned())).unwrap();
         let E0: Vec2 = get_element!(section, "E0");
@@ -124,12 +138,7 @@ impl Fields {
         let omega1: f64 = get_element!(section, "omega1");
         let omega2: f64 = get_element!(section, "omega2");
         let phi: f64 = get_element!(section, "phi");
-        Fields {
-            E: (E0, E1, E2),
-            B: (B0, B1, B2),
-            omega: (omega1, omega2),
-            phi: phi
-        }
+        Fields::new((E0, E1, E2), (B0, B1, B2), (omega1, omega2), phi)
     }
 }
 
@@ -204,6 +213,9 @@ pub struct Plot {
     pub high: f64,
     pub step: f64,
     pub var: String,
+    fields: Fields,
+    n: usize,
+    current: usize,
 }
 
 impl Plot {
@@ -217,26 +229,42 @@ impl Plot {
             low: low,
             high: high,
             step: step,
-            var: var
+            var: var,
+            fields: Fields::zero(),
+            n: 0,
+            current: 0,
         }
     }
-    pub fn gen_fields(&self, f: &Fields) -> Vec<Fields> {
-        // стоит сделать итератор вместо вектора
-        let mut res : Vec<Fields> = Vec::new();
-        let n = ((self.high - self.low) / self.step) as usize;
-        for i in 0..n {
-            let mut fields = f.clone();
-            match self.var.as_ref() {
-                "E0.x" => fields.E.0.x = self.low + self.step * i as f64,
-                "E0.y" => fields.E.0.y = self.low + self.step * i as f64,
-                "E1.x" => fields.E.1.x = self.low + self.step * i as f64,
-                "E1.y" => fields.E.1.y = self.low + self.step * i as f64,
-                "E2.x" => fields.E.2.x = self.low + self.step * i as f64,
-                "E2.y" => fields.E.2.y = self.low + self.step * i as f64,
-                _ => println!("something went wrong"),
-            }
-            res.push(fields);
+    pub fn gen_fields(mut self, f: Fields) -> Self {
+        self.fields = f;
+        self
+    }
+}
+
+impl Iterator for Plot {
+    type Item = Fields;
+    fn next(&mut self) -> Option<Fields> {
+        if self.n == 0 {
+            self.n = ((self.high - self.low) / self.step) as usize;
         }
-        res
+        let mut fields = self.fields.clone();
+        match self.var.as_ref() {
+            "E0.x" => fields.E.0.x = self.low + self.step * self.current as f64,
+            "E0.y" => fields.E.0.y = self.low + self.step * self.current as f64,
+            "E1.x" => fields.E.1.x = self.low + self.step * self.current as f64,
+            "E1.y" => fields.E.1.y = self.low + self.step * self.current as f64,
+            "E2.x" => fields.E.2.x = self.low + self.step * self.current as f64,
+            "E2.y" => fields.E.2.y = self.low + self.step * self.current as f64,
+            _ => {
+                println!("something went wrong");
+                return None;
+            }
+        }
+        if self.current < self.n {
+            self.current += 1;
+            Some(fields)
+        } else {
+            None
+        }
     }
 }

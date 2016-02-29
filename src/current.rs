@@ -16,7 +16,7 @@ fn main() {
     let (energies, probabilities) = files.read_probabilities();
 
     files.clean_result();
-    for f in plot.gen_fields(&fields) {
+    for f in plot.gen_fields(fields) {
         let result = model.run(&bzone, &f, &phonons, &energies, &probabilities);
         files.append_result_line(&f, &result);
     }
