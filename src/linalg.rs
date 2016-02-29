@@ -166,7 +166,7 @@ macro_rules! same_functional_impl {
             }
             impl fmt::Display for $t {
                 fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-                    write!(f, "({}, {})", self.x, self.y)
+                    write!(f, "{} {}", self.x, self.y)
                 }
             }
             impl FromStr for $t {
