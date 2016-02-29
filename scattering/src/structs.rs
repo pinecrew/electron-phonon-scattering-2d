@@ -143,45 +143,7 @@ impl Fields {
     }
 }
 
-#[derive(Clone)]
-pub struct Bzone {
-    pub A: Point,
-    pub B: Point,
-    pub C: Point,
-    pub D: Point,
-    pub basis: (Vec2, Vec2),
-    pub dual_basis: (Vec2, Vec2),
-}
 
-impl Bzone {
-    pub fn new(A : Point, B : Point, D : Point) -> Bzone {
-        let b = B - A;
-        let d = D - A;
-        let C = A + b + d;
-
-        let b2 = b - b.ort() * b.dot(d.ort());
-        let d2 = d - d.ort() * d.dot(b.ort());
-
-        let b1 = b2 / b.dot(b2);
-        let d1 = d2 / d.dot(d2);
-
-        Bzone {
-            A: A,
-            B: B,
-            C: C,
-            D: D,
-            basis: (b, d),
-            dual_basis: (b1, d1)
-        }
-    }
-    pub fn from_config(conf: &Ini) -> Bzone {
-        let section = conf.section(Some("bzone".to_owned())).unwrap();
-        let A: Point = get_element!(section, "A");
-        let B: Point = get_element!(section, "B");
-        let D: Point = get_element!(section, "D");
-        Bzone::new(A, B, D)
-    }
-}
 
 pub struct Probability {
     pub momentum_error: f64,

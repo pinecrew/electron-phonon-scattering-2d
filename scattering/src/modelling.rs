@@ -1,11 +1,9 @@
-use ini::Ini;
 use structs::{Bzone, Fields, Plot, Phonons};
 use linalg::{Point, Vec2, Cross};
 use material_specific::{velocity, energy, to_first_bz, momentums_with_energy_in_dir, energy_theta,
                         pmax};
 use stats::{ParticleStats, EnsembleStats};
 use time::get_time;
-use scoped_threadpool::Pool;
 
 
 struct Rng {
@@ -170,52 +168,52 @@ impl Model {
             particles: particles,
         }
     }
-    pub fn from_config(conf: &Ini) -> Model {
-        let section = conf.section(Some("model".to_owned())).unwrap();
-        let dt: f64 = get_element!(section, "dt");
-        let all_time: f64 = get_element!(section, "all_time");
-        let threads: u32 = get_element!(section, "threads");
-        let particles: usize = get_element!(section, "particles");
-        Model::new(dt, all_time, threads, particles)
-    }
+    // pub fn from_config(conf: &Ini) -> Model {
+    //     let section = conf.section(Some("model".to_owned())).unwrap();
+    //     let dt: f64 = get_element!(section, "dt");
+    //     let all_time: f64 = get_element!(section, "all_time");
+    //     let threads: u32 = get_element!(section, "threads");
+    //     let particles: usize = get_element!(section, "particles");
+    //     Model::new(dt, all_time, threads, particles)
+    // }
 
-    pub fn run(&self,
-               b: &Bzone,
-               f: &Fields,
-               ph: &Phonons,
-               es: &Vec<f64>,
-               ps: &Vec<f64>)
-               -> EnsembleStats {
-        let bd = BolzmannDistrib::new(ph.T, &b);
-        let init_condition = bd.make_dist(self.particles);
-        let mut seed: Vec<u32> = vec![0u32; self.particles];
+    // pub fn run(&self,
+    //            b: &Bzone,
+    //            f: &Fields,
+    //            ph: &Phonons,
+    //            es: &Vec<f64>,
+    //            ps: &Vec<f64>)
+    //            -> EnsembleStats {
+    //     let bd = BolzmannDistrib::new(ph.T, &b);
+    //     let init_condition = bd.make_dist(self.particles);
+    //     let mut seed: Vec<u32> = vec![0u32; self.particles];
 
-        let mut rng = Rng::new(get_time().nsec as u32);
-        for j in 0..self.particles as usize {
-            seed[j] = rng.rand();
-        }
+    //     let mut rng = Rng::new(get_time().nsec as u32);
+    //     for j in 0..self.particles as usize {
+    //         seed[j] = rng.rand();
+    //     }
 
-        let mut ensemble: Vec<ParticleStats> =
-            vec![ParticleStats::new(Vec2::zero(), 0, 0, 0.0); self.particles as usize];
-        let mut pool = Pool::new(self.threads as u32);
+    //     let mut ensemble: Vec<ParticleStats> =
+    //         vec![ParticleStats::new(Vec2::zero(), 0, 0, 0.0); self.particles as usize];
+    //     let mut pool = Pool::new(self.threads as u32);
 
-        pool.scoped(|scope| {
-            for (index, item) in ensemble.iter_mut().enumerate() {
-                let f = f.clone();
-                let b = b.clone();
-                let ph = ph.clone();
-                let es = es.clone();
-                let ph = ph.clone();
-                let ic = init_condition[index];
-                let s = seed[index];
-                scope.execute(move || {
-                    *item = self.one_particle(ic, s, &b, &f, &ph, &es, &ps);
-                });
-            }
-        });
+    //     pool.scoped(|scope| {
+    //         for (index, item) in ensemble.iter_mut().enumerate() {
+    //             let f = f.clone();
+    //             let b = b.clone();
+    //             let ph = ph.clone();
+    //             let es = es.clone();
+    //             let ph = ph.clone();
+    //             let ic = init_condition[index];
+    //             let s = seed[index];
+    //             scope.execute(move || {
+    //                 *item = self.one_particle(ic, s, &b, &f, &ph, &es, &ps);
+    //             });
+    //         }
+    //     });
 
-        EnsembleStats::from_ensemble(&ensemble)
-    }
+    //     EnsembleStats::from_ensemble(&ensemble)
+    // }
 
     fn one_particle(&self,
                     init_condition: Point,
