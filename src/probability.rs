@@ -6,10 +6,12 @@ use scoped_threadpool::Pool;
 
 use std::sync::Arc;
 
+extern crate linalg;
+use linalg::Point;
+
 extern crate scattering;
 use scattering::structs::{Files, Probability, Bzone};
-use scattering::linalg::{Vec2, Point};
-use scattering::material_specific::{energy, energy_gradient, get_energy_limits, pmax, momentums_with_energy_in_dir};
+use scattering::material_specific::{energy, energy_gradient, get_energy_limits, momentums_with_energy_in_dir};
 
 
 fn probability(e: f64, p: &Probability, b: &Bzone) -> f64 {

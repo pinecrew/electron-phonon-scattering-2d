@@ -5,7 +5,6 @@ use std::fmt;
 use std::str::FromStr;
 use std::num;
 
-
 #[derive(Debug, Clone, Copy)]
 pub struct Vec2 {
     pub x: f64,
