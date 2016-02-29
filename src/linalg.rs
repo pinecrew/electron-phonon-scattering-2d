@@ -40,6 +40,9 @@ impl Vec2 {
     pub fn ort(self) -> Vec2 {
         self / self.len()
     }
+    pub fn sqr(&self) -> Vec2 {
+        Vec2::new(self.x.powi(2), self.y.powi(2))
+    }
     pub fn sqrt(&self) -> Vec2 {
         Vec2::new(self.x.sqrt(), self.y.sqrt())
     }

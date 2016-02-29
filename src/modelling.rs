@@ -1,7 +1,8 @@
 use ini::Ini;
-use structs::{Bzone, Fields, Plot, Phonons, Res};
+use structs::{Bzone, Fields, Plot, Phonons};
 use linalg::{Point, Vec2, Cross};
 use material_specific::{velocity, energy, to_first_bz, momentums_with_energy_in_dir};
+use stats::{ParticleStats, EnsembleStats};
 
 struct Rng {
     x: u32,
@@ -29,25 +30,6 @@ impl Rng {
     }
     pub fn uniform(&mut self) -> f64 {
         self.rand() as f64 / u32::max_value() as f64
-    }
-}
-
-#[derive(Debug)]
-struct ParticleStats {
-    average_speed: Vec2,
-    n_ac: u32,
-    n_opt: u32,
-    tau: f64
-}
-
-impl ParticleStats {
-    pub fn new(average_speed : Vec2, n_ac : u32, n_opt : u32, tau : f64) -> ParticleStats {
-        ParticleStats {
-            average_speed: average_speed,
-            n_ac: n_ac,
-            n_opt: n_opt,
-            tau: tau
-        }
     }
 }
 
@@ -109,7 +91,7 @@ impl Model {
         Model::new(dt, all_time, threads, particles)
     }
 
-    pub fn run(&self, b : &Bzone, f : &Fields, ph : &Phonons, es : &Vec<f64>, ps : &Vec<f64>) -> Res {
+    pub fn run(&self, b : &Bzone, f : &Fields, ph : &Phonons, es : &Vec<f64>, ps : &Vec<f64>) -> EnsembleStats {
         unimplemented!();
     }
 

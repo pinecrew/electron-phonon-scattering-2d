@@ -5,3 +5,5 @@ pub mod structs;
 pub mod linalg;
 pub mod material_specific;
 pub mod modelling;
+pub mod stats;
+
