@@ -1,3 +1,4 @@
+//! Provides function for creating ensembles of particles with Boltzmann distribution
 use std::f64::consts::PI;
 use std::cmp::PartialOrd;
 use material::Material;
@@ -67,6 +68,7 @@ impl<'a, T: 'a + Material> BoltzmannDistrib<'a, T> {
             material: m,
         }
     }
+    /// Make ensemble of n particles with Boltzmann distribution
     pub fn make_dist(&self, seed: u32, n: usize) -> Vec<Point> {
         let mut rng = Rng::new(seed);
         let mut points: Vec<Point> = Vec::with_capacity(n);
