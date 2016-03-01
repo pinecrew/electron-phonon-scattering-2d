@@ -20,6 +20,24 @@ fn binary_search<T: PartialOrd>(sorted_array: &[T], value: T) -> usize {
     i
 }
 
+#[test]
+fn test_binsearch() {
+    let mut v1: Vec<f64> = Vec::new();
+    let mut v2: Vec<f64> = Vec::new();
+    let mut v3: Vec<f64> = Vec::new();
+    for i in 1..200 {
+        v1.push(i as f64 / 5.0);
+        v2.push((i as f64).ln());
+        v3.push((i as f64 / 200.0).sin());
+    }
+    assert_eq!(binary_search(&v1, 12.0) + 1, 60);
+    assert_eq!(binary_search(&v2, 5.0) + 1,
+               (5.0 as f64).exp().floor() as usize);
+    assert_eq!(binary_search(&v3, 0.5) + 1,
+               (200.0 * (0.5 as f64).asin()).floor() as usize);
+}
+
+
 pub struct BoltzmannDistrib<'a, T: 'a + Material> {
     temperature: f64,
     angle_distrib: Vec<f64>,
@@ -79,7 +97,7 @@ impl<'a, T: 'a + Material> BoltzmannDistrib<'a, T> {
     }
     fn angle(&self, r: f64) -> f64 {
         let i = binary_search(&self.angle_distrib, r);
-        let w = (r - self.angle_distrib[i]) / (self.angle_distrib[i+1] - self.angle_distrib[i]);
+        let w = (r - self.angle_distrib[i]) / (self.angle_distrib[i + 1] - self.angle_distrib[i]);
         2.0 * PI * (i as f64 + w)
     }
 }
