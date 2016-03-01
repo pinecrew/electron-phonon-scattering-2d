@@ -2,38 +2,7 @@ use structs::{Bzone, Fields, Plot, Phonons};
 use linalg::{Point, Vec2, Cross};
 use material_specific::{velocity, energy, to_first_bz, momentums_with_energy_in_dir, energy_theta,
                         pmax};
-use stats::{ParticleStats, EnsembleStats};
 use time::get_time;
-
-
-struct Rng {
-    x: u32,
-    y: u32,
-    z: u32,
-    w: u32,
-}
-
-impl Rng {
-    pub fn new(seed: u32) -> Rng {
-        Rng {
-            x: seed,
-            y: 362_436_069,
-            z: 521_288_629,
-            w: 88_675_123,
-        }
-    }
-    pub fn rand(&mut self) -> u32 {
-        let t = (self.x ^ (self.x << 11));
-        self.x = self.y;
-        self.y = self.z;
-        self.z = self.w;
-        self.w = (self.w ^ (self.w >> 19)) ^ (t ^ (t >> 8));
-        self.w
-    }
-    pub fn uniform(&mut self) -> f64 {
-        self.rand() as f64 / u32::max_value() as f64
-    }
-}
 
 fn runge<F>(p: &Point, force: F, t: f64, dt: f64) -> Point
     where F: Fn(&Point, f64) -> Vec2
