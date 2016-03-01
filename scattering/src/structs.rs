@@ -80,32 +80,7 @@ impl Files {
 }
 
 
-#[derive(Clone)]
-pub struct Fields {
-    // E = (E0, E1, E2)
-    pub E: (Vec2, Vec2, Vec2),
-    // B = (B0, B1, B2)
-    pub B: (f64, f64, f64),
-    // omega = (omega1, omega2)
-    pub omega: (f64, f64),
-    pub phi: f64,
-}
 
-impl Fields {
-    pub fn new(E: (Vec2, Vec2, Vec2), B: (f64, f64, f64), omega: (f64, f64), phi: f64) -> Fields {
-        Fields {
-            E: E,
-            B: B,
-            omega: omega,
-            phi: phi
-        }
-    }
-    pub fn zero() -> Fields {
-        Fields::new(
-            (Vec2::zero(), Vec2::zero(), Vec2::zero()),
-            (0.0, 0.0, 0.0), (0.0, 0.0), 0.0
-        )
-    }
     pub fn from_config(conf : &Ini) -> Fields {
         let section = conf.section(Some("fields".to_owned())).unwrap();
         let E0: Vec2 = get_element!(section, "E0");

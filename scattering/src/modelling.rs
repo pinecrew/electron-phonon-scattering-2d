@@ -1,8 +1,38 @@
-use structs::{Bzone, Fields, Plot, Phonons};
+//! Modelling one particle movement in material under electromagnetic fields with phonon scattering
+
+use material::Material;
+use phonons::Phonons;
 use linalg::{Point, Vec2, Cross};
-use material_specific::{velocity, energy, to_first_bz, momentums_with_energy_in_dir, energy_theta,
-                        pmax};
-use time::get_time;
+use rng::Rng;
+
+#[derive(Clone)]
+/// Electromagnetic fields
+pub struct Fields {
+    /// Amplitudes of constant, first and second wave electric fields
+    pub e: (Vec2, Vec2, Vec2),
+    /// Amplitudes of z-component constant, first and second wave magnetic fields
+    pub b: (f64, f64, f64),
+    /// Frequences of waves. First value is unused and exists for consistency
+    pub omega: (f64, f64, f64),
+    pub phi: f64,
+}
+
+impl Fields {
+    pub fn new(e: (Vec2, Vec2, Vec2), b: (f64, f64, f64), omega: (f64, f64), phi: f64) -> Fields {
+        Fields {
+            e: e,
+            b: b,
+            omega: (0.0, omega.0, omega.1),
+            phi: phi,
+        }
+    }
+    pub fn zero() -> Fields {
+        Fields::new((Vec2::zero(), Vec2::zero(), Vec2::zero()),
+                    (0.0, 0.0, 0.0),
+                    (0.0, 0.0),
+                    0.0)
+    }
+}
 
 fn runge<F>(p: &Point, force: F, t: f64, dt: f64) -> Point
     where F: Fn(&Point, f64) -> Vec2
@@ -16,76 +46,35 @@ fn runge<F>(p: &Point, force: F, t: f64, dt: f64) -> Point
     *p + (k1 + k2 * 2.0 + k3 * 2.0 + k4) * dt / 6.0
 }
 
-
-
-pub struct Model {
-    pub dt: f64,
-    pub all_time: f64,
-    pub threads: u32,
-    pub particles: usize,
+pub struct Summary {
+    pub average_speed: Vec2,
+    pub acoustic: u32,
+    pub optical: u32,
+    pub tau: f64,
 }
 
-impl Model {
-    pub fn new(dt: f64, all_time: f64, threads: u32, particles: usize) -> Model {
-        Model {
+pub struct Modelling {
+    dt: f64,
+    all_time: f64,
+    init_condition: Point,
+    seed: u32,
+}
+
+impl Modelling {
+    pub fn new(dt: f64, all_time: f64, init_condition: Point, seed: u32) -> Modelling {
+        Modelling {
             dt: dt,
             all_time: all_time,
-            threads: threads,
-            particles: particles,
+            init_condition: init_condition,
+            seed: seed,
         }
     }
-    // pub fn from_config(conf: &Ini) -> Model {
-    //     let section = conf.section(Some("model".to_owned())).unwrap();
-    //     let dt: f64 = get_element!(section, "dt");
-    //     let all_time: f64 = get_element!(section, "all_time");
-    //     let threads: u32 = get_element!(section, "threads");
-    //     let particles: usize = get_element!(section, "particles");
-    //     Model::new(dt, all_time, threads, particles)
-    // }
 
-    // pub fn run(&self,
-    //            b: &Bzone,
-    //            f: &Fields,
-    //            ph: &Phonons,
-    //            es: &Vec<f64>,
-    //            ps: &Vec<f64>)
-    //            -> EnsembleStats {
-    //     let bd = BolzmannDistrib::new(ph.T, &b);
-    //     let init_condition = bd.make_dist(self.particles);
-    //     let mut seed: Vec<u32> = vec![0u32; self.particles];
-
-    //     let mut rng = Rng::new(get_time().nsec as u32);
-    //     for j in 0..self.particles as usize {
-    //         seed[j] = rng.rand();
-    //     }
-
-    //     let mut ensemble: Vec<ParticleStats> =
-    //         vec![ParticleStats::new(Vec2::zero(), 0, 0, 0.0); self.particles as usize];
-    //     let mut pool = Pool::new(self.threads as u32);
-
-    //     pool.scoped(|scope| {
-    //         for (index, item) in ensemble.iter_mut().enumerate() {
-    //             let f = f.clone();
-    //             let b = b.clone();
-    //             let ph = ph.clone();
-    //             let es = es.clone();
-    //             let ph = ph.clone();
-    //             let ic = init_condition[index];
-    //             let s = seed[index];
-    //             scope.execute(move || {
-    //                 *item = self.one_particle(ic, s, &b, &f, &ph, &es, &ps);
-    //             });
-    //         }
-    //     });
-
-    //     EnsembleStats::from_ensemble(&ensemble)
-    // }
-
-    fn run<T: Material>(&self, m: &T, f: &Fields, ph: &Phonons) -> ParticleStats {
+    pub fn run<T: Material>(&self, m: &T, f: &Fields, ph: &Phonons) -> Summary {
         use std::f64::consts::PI;
 
-        let mut rng = Rng::new(seed);
-        let mut p = init_condition;
+        let mut rng = Rng::new(self.seed);
+        let mut p = self.init_condition;
 
         let mut t = 0.0;
         let mut wsum: f64 = 0.0;
@@ -95,44 +84,44 @@ impl Model {
         let mut int_v_dt = Vec2::zero();
 
         let force = |p: &Point, t: f64| -> Vec2 {
-            f.E.0 + f.E.1 * (f.omega.0 * t).cos() + f.E.2 * (f.omega.1 * t + f.phi).cos() +
-            velocity(p).cross(f.B.0 + f.B.1 * (f.omega.0 * t).cos() +
-                              f.B.2 * (f.omega.1 * t + f.phi).cos())
+            f.e.0 + f.e.1 * (f.omega.1 * t).cos() + f.e.2 * (f.omega.2 * t + f.phi).cos() +
+            m.velocity(p)
+             .cross(f.b.0 + f.b.1 * (f.omega.1 * t).cos() + f.b.2 * (f.omega.2 * t + f.phi).cos())
         };
 
         let mut r = -rng.uniform().ln();
-        while (t < self.all_time) {
-            let v = velocity(&p);
+        while t < self.all_time {
+            let v = m.velocity(&p);
 
             int_v_dt = int_v_dt + v * self.dt;
 
             p = runge(&p, &force, t, self.dt); // решаем уравнения движения
 
             // приводим импульс к зоне
-            p = to_first_bz(&p, b);
+            p = m.brillouin_zone().to_first_bz(&p);
 
             t += self.dt;
 
-            let mut e = energy(&p);
-            let dwlo = ph.wlo_max * get_probability(e - ph.beta, &es, &ps); // 0, если выпал из минизоны
-            let dwla = ph.wla_max * get_probability(e, &es, &ps);
+            let mut e = m.energy(&p);
+            let dwlo = ph.optical_constant * ph.probability(e - ph.optical_energy); // 0, если выпал из минизоны
+            let dwla = ph.acoustic_constant * ph.probability(e);
             wsum += (dwla + dwlo) * self.dt;
 
-            if (wsum > r) {
+            if wsum > r {
                 r = -rng.uniform().ln();
                 wsum = 0.0;
-                if (dwlo / (dwla + dwlo) > rng.uniform()) {
+                if dwlo / (dwla + dwlo) > rng.uniform() {
                     n_opt += 1; // наращиваем счетчик рассеяний на оптических
                              // фононах
-                    e -= ph.beta;
+                    e -= ph.optical_energy;
                 } else {
                     n_ac += 1; // наращиваем счетчик рассеяний на акустических фононах
                 }
                 let mut count = 15;
-                while (count > 0) {
+                while count > 0 {
                     let theta = 2.0 * PI * rng.uniform(); // случайным образом
                     // разыгрываем направление квазиимпульса
-                    let ps = momentums_with_energy_in_dir(e, theta, 20, 1e-3, &b);
+                    let ps = m.momentums(e, theta);
                     if ps.len() > 0 {
                         p = ps[0];
                         break;
@@ -148,6 +137,11 @@ impl Model {
         let average_speed = int_v_dt / t;
         let tau = t / (n0 as f64 + 1.0);
 
-        ParticleStats::new(average_speed, n_ac, n_opt, tau)
+        Summary {
+            average_speed: average_speed,
+            acoustic: n_ac,
+            optical: n_opt,
+            tau: tau,
+        }
     }
 }
