@@ -10,14 +10,18 @@ use std::num;
 /// 2D vector in cortesian coordinates
 #[derive(Debug, Clone, Copy)]
 pub struct Vec2 {
+    /// component of vector
     pub x: f64,
+    /// component of vector
     pub y: f64,
 }
 
 /// 2D point in cortesian coordinates
 #[derive(Debug, Clone, Copy)]
 pub struct Point {
+    /// component of point
     pub x: f64,
+    /// component of point
     pub y: f64,
 }
 
@@ -33,6 +37,7 @@ impl Vec2 {
             y: r * f64::sin(theta),
         }
     }
+    /// Create a zero `Vec2`
     pub fn zero() -> Vec2 {
         Vec2::new(0.0, 0.0)
     }
@@ -40,6 +45,7 @@ impl Vec2 {
     pub fn dot(self, b: Vec2) -> f64 {
         self.x * b.x + self.y * b.y
     }
+    /// Vector length
     pub fn len(self) -> f64 {
         self.dot(self).sqrt()
     }
@@ -47,9 +53,11 @@ impl Vec2 {
     pub fn ort(self) -> Vec2 {
         self / self.len()
     }
+    /// Squares of the vector coordinates
     pub fn sqr(&self) -> Vec2 {
         Vec2::new(self.x.powi(2), self.y.powi(2))
     }
+    /// Square root of vector coordinates
     pub fn sqrt(&self) -> Vec2 {
         Vec2::new(self.x.sqrt(), self.y.sqrt())
     }
@@ -121,21 +129,50 @@ impl Div<f64> for Vec2 {
 }
 
 impl Point {
+    /// Constructs a new `Point`
+    ///
+    /// #Examples
+    ///
+    /// ```
+    /// use linalg::Point;
+    /// // ..
+    /// // create `Point` with coords (1.5, 3.4)
+    /// let a: Point = Point::new(1.5, 3.4);
+    /// // return: a = 1.5 3.4
+    /// println!("a = {}", a);
+    /// ```
     pub fn new(x: f64, y: f64) -> Point {
         Point { x: x, y: y }
     }
+    /// Constructs a new `Point` from polar coordinates $(r, \theta)$.
     pub fn from_polar(r: f64, theta: f64) -> Point {
         Point {
             x: r * f64::cos(theta),
             y: r * f64::sin(theta),
         }
     }
+    /// Constructs a zero `Point`
+    ///
+    /// #Examples
+    ///
+    /// ```
+    /// use linalg::Point;
+    /// // ...
+    /// // create a zero `Point`
+    /// let a = Point::zero();
+    /// // create b `Point`
+    /// let b = Point::new(0.0, 0.0);
+    /// // a == b
+    /// assert_eq!(a, b)
+    /// ```
     pub fn zero() -> Point {
         Point::new(0.0, 0.0)
     }
+    /// Construct `Point` from given `Vec2`
     pub fn from_vec2(v: Vec2) -> Point {
         Point::new(v.x, v.y)
     }
+    /// ?
     pub fn position(self) -> Vec2 {
         Vec2::new(self.x, self.y)
     }
