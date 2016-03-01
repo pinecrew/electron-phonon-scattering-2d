@@ -1,7 +1,24 @@
 use std::f64::consts::PI;
+use std::cmp::PartialOrd;
 use material::Material;
 use linalg::Point;
 use rng::Rng;
+
+fn binary_search<T: PartialOrd>(sorted_array: &[T], value: T) -> usize {
+    let mut i = 0;
+    let mut j = sorted_array.len() - 1;
+
+    while j - i > 1 {
+        let m = (i + j) / 2;
+        if sorted_array[m] > value {
+            j = m;
+        } else {
+            i = m;
+        }
+    }
+
+    i
+}
 
 pub struct BoltzmannDistrib<'a, T: 'a + Material> {
     temperature: f64,
@@ -16,11 +33,11 @@ impl<'a, T: 'a + Material> BoltzmannDistrib<'a, T> {
         for i in 0..n - 1 {
             let theta = 2.0 * PI * i as f64 / n as f64;
             let pm = m.brillouin_zone().pmax(theta);
+            let step = pm / (n - 1) as f64;
             angle_distrib[i + 1] = angle_distrib[i];
             for j in 0..n {
-                let p = pm * j as f64 / (n - 1) as f64;
-                angle_distrib[i + 1] += (-m.energy_polar(p, theta) / temperature).exp() * pm /
-                                        (n - 1) as f64;
+                let p = step * j as f64;
+                angle_distrib[i + 1] += (-m.energy_polar(p, theta) / temperature).exp() * step;
             }
         }
         for i in 0..n {
@@ -46,43 +63,23 @@ impl<'a, T: 'a + Material> BoltzmannDistrib<'a, T> {
         let n = 1000;
         let mut dist = vec![0.0; n];
         let pm = self.material.brillouin_zone().pmax(theta);
+        let step = pm / (n - 1) as f64;
         for i in 0..n - 1 {
-            let p = pm * i as f64 / (n - 1) as f64;
+            let p = step * i as f64;
             dist[i + 1] = dist[i] +
-                          (-self.material.energy_polar(p, theta) / self.temperature).exp() * pm /
-                          (n - 1) as f64;
+                          (-self.material.energy_polar(p, theta) / self.temperature).exp() * step;
         }
         for i in 0..n {
             dist[i] /= dist[n - 1];
         }
-        let mut i = 0;
-        let mut j = dist.len() - 1;
-
-        while j - i > 1 {
-            let m = (i + j) / 2;
-            if dist[m] > r {
-                j = m;
-            } else {
-                i = m;
-            }
-        }
-        let w = (r - dist[i]) / (dist[j] - dist[i]);
+        let i = binary_search(&dist, r);
+        let w = (r - dist[i]) / (dist[i + 1] - dist[i]);
         let p = (i as f64 + w) / (n - 1) as f64 * pm;
         Point::from_polar(p, theta)
     }
     fn angle(&self, r: f64) -> f64 {
-        let mut i = 0;
-        let mut j = self.angle_distrib.len() - 1;
-
-        while j - i > 1 {
-            let m = (i + j) / 2;
-            if self.angle_distrib[m] > r {
-                j = m;
-            } else {
-                i = m;
-            }
-        }
-        let w = (r - self.angle_distrib[i]) / (self.angle_distrib[j] - self.angle_distrib[i]);
+        let i = binary_search(&self.angle_distrib, r);
+        let w = (r - self.angle_distrib[i]) / (self.angle_distrib[i+1] - self.angle_distrib[i]);
         2.0 * PI * (i as f64 + w)
     }
 }
