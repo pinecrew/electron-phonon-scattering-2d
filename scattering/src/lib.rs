@@ -4,4 +4,5 @@ extern crate linalg;
 pub mod material;
 // pub mod modelling;
 // pub mod stats;
+pub mod boltzmann;
 mod rng;

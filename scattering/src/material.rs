@@ -18,7 +18,7 @@ pub trait Material {
     /// Solves equation energy_polar(p, theta) = energy
     fn momentums(&self, energy: f64, theta: f64) -> Vec<Point>;
     /// brillouin zone structure
-    fn brillouin_zone(&self) -> BrillouinZone;
+    fn brillouin_zone(&self) -> &BrillouinZone;
 }
 
 #[derive(Clone)]
