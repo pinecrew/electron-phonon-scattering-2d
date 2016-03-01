@@ -1,4 +1,4 @@
-use linalg::{Vec2, Point, Cross};
+use linalg::{Vec2, Point, Cross, dual_basis};
 
 pub trait Material {
     fn energy(p: &Point) -> f64;
@@ -21,7 +21,7 @@ pub trait Material {
 }
 
 #[derive(Clone)]
-pub struct Bzone {
+pub struct BrillouinZone {
     pub A: Point,
     pub B: Point,
     pub C: Point,
@@ -30,44 +30,37 @@ pub struct Bzone {
     pub dual_basis: (Vec2, Vec2),
 }
 
-impl Bzone {
+impl BrillouinZone {
     pub fn new(A: Point, B: Point, D: Point) -> Bzone {
         let b = B - A;
         let d = D - A;
         let C = A + b + d;
-
-        let b2 = b - b.ort() * b.dot(d.ort());
-        let d2 = d - d.ort() * d.dot(b.ort());
-
-        let b1 = b2 / b.dot(b2);
-        let d1 = d2 / d.dot(d2);
+        let basis = (b, d);
 
         Bzone {
             A: A,
             B: B,
             C: C,
             D: D,
-            basis: (b, d),
-            dual_basis: (b1, d1),
+            basis: basis,
+            dual_basis: dual_basis(basis),
         }
     }
 
-    // Функция, приводящая квазиимпульс к первой зоне Бриллюэна
+    /// Returns equivalent momentum in first brillouin zone
     pub fn to_first_bz(&self, p: &Point) -> Point {
 
         let pv = *p - self.A;
 
-        // находим разложение по базису, используя взаимный базис
         let n1 = pv.dot(self.dual_basis.0).floor();
         let n2 = pv.dot(self.dual_basis.1).floor();
 
         *p - self.basis.0 * n1 - self.basis.1 * n2
     }
 
-    // Границы первой зоны Бриллюэна
+    /// Calculates maximum value of momentum in direction $\theta$ in first brillouin zone
     pub fn pmax(&self, theta: f64) -> f64 {
-        // Считаем расстояние от начала координат до точки пересечения луча с
-        // отрезками
+
         let OA = self.A.position();
         let OB = self.B.position();
         let OC = self.C.position();
