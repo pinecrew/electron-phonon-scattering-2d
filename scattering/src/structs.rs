@@ -79,28 +79,6 @@ impl Files {
     }
 }
 
-pub struct Phonons {
-    pub beta: f64,
-    pub wla_max: f64,
-    pub wlo_max: f64,
-    pub T: f64,
-}
-
-impl Phonons {
-    pub fn from_config(conf : &Ini) -> Phonons {
-        let section = conf.section(Some("phonons".to_owned())).unwrap();
-        let beta: f64 = get_element!(section, "beta");
-        let wla_max: f64 = get_element!(section, "wla_max");
-        let wlo_max: f64 = get_element!(section, "wlo_max");
-        let T: f64 = get_element!(section, "T");
-        Phonons {
-            beta: beta,
-            wla_max: wla_max,
-            wlo_max: wlo_max,
-            T: T
-        }
-    }
-}
 
 #[derive(Clone)]
 pub struct Fields {

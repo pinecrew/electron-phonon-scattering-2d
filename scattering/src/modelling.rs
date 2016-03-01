@@ -16,26 +16,7 @@ fn runge<F>(p: &Point, force: F, t: f64, dt: f64) -> Point
     *p + (k1 + k2 * 2.0 + k3 * 2.0 + k4) * dt / 6.0
 }
 
-fn get_probability(e: f64, es: &Vec<f64>, ps: &Vec<f64>) -> f64 {
-    let step = es[1] - es[0];
-    let pos = (e - es[0]) / step;
-    if pos < 0.0 || pos + 1.0 > ps.len() as f64 {
-        return 0.0;
-    }
-    let i = pos.floor() as usize;
-    let w = pos - pos.floor();
-    ps[i] * (1.0 - w) + ps[i + 1] * w
-}
 
-#[test]
-fn test_probability() {
-    let es = vec![0.0, 0.5, 1.0];
-    let ps = vec![1.0, 2.0, 2.0];
-    assert_eq!(get_probability(0.25, &es, &ps), 1.5);
-    assert_eq!(get_probability(0.75, &es, &ps), 2.0);
-    assert_eq!(get_probability(-1.0, &es, &ps), 0.0);
-    assert_eq!(get_probability(1.1, &es, &ps), 0.0);
-}
 
 pub struct Model {
     pub dt: f64,
@@ -100,15 +81,7 @@ impl Model {
     //     EnsembleStats::from_ensemble(&ensemble)
     // }
 
-    fn one_particle(&self,
-                    init_condition: Point,
-                    seed: u32,
-                    b: &Bzone,
-                    f: &Fields,
-                    ph: &Phonons,
-                    es: &Vec<f64>,
-                    ps: &Vec<f64>)
-                    -> ParticleStats {
+    fn run<T: Material>(&self, m: &T, f: &Fields, ph: &Phonons) -> ParticleStats {
         use std::f64::consts::PI;
 
         let mut rng = Rng::new(seed);

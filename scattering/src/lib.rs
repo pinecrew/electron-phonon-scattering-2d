@@ -1,8 +1,6 @@
 extern crate linalg;
-#[macro_use]
-// pub mod structs;
+
 pub mod material;
-// pub mod modelling;
-// pub mod stats;
 pub mod boltzmann;
+pub mod phonons;
 mod rng;
