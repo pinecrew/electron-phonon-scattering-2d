@@ -1,17 +1,17 @@
-extern crate scattering;
 use scattering::material::{Material, BrillouinZone};
+use linalg::{Point, Vec2};
+use std::f64::consts::PI;
 
-const vf: f64 = 1e6;
-const hbar: f64 = 6.5e-16;
-const c: f64 = 3e8;
-const d: f64 = 2e-8;
-const eps0: f64 = 0.059;
-const eps1: f64 = 0.029;
-const g: f64 = (eps1 / eps0) * (eps1 / eps0);
-const a: f64 = vf * hbar / eps0 / d;
+const VF: f64 = 1e6;
+const HBAR: f64 = 6.5e-16;
+const C: f64 = 3e8;
+const D: f64 = 2e-8;
+const EPS0: f64 = 0.059;
+const EPS1: f64 = 0.029;
+const G: f64 = (EPS1 / EPS0) * (EPS1 / EPS0);
+const A: f64 = VF * HBAR / EPS0 / D;
 
 
-#[derive(Debug)]
 pub struct SL {
     minimum_energy: f64,
     maximum_energy: f64,
@@ -19,11 +19,23 @@ pub struct SL {
 }
 
 impl SL {
-    fn new() -> SL {
-        unimplemented!();
+    pub fn new() -> SL {
+        let a = Point::new(-30.0, -PI);
+        let b = Point::new(30.0, -PI);
+        let d = Point::new(-30.0, PI);
+        let brillouin_zone = BrillouinZone::new(a, b, d);
+        let mut s = SL {
+            minimum_energy: 0.0,
+            maximum_energy: 0.0,
+            brillouin_zone: brillouin_zone,
+        };
+        let (min, max) = s.get_energy_limits();
+        s.minimum_energy = min;
+        s.maximum_energy = max;
+        s
     }
 
-    fn get_energy_limits(bzone: &Bzone) -> (f64, f64) {
+    fn get_energy_limits(&self) -> (f64, f64) {
         let mut emin = 100.0;
         let mut emax = -100.0;
         let n = 1000;
@@ -31,8 +43,9 @@ impl SL {
             for j in 0..n {
                 let i1 = (i as f64) / (n as f64);
                 let j1 = (j as f64) / (n as f64);
-                let p = bzone.A + bzone.basis.0 * i1 + bzone.basis.1 * j1;
-                let e = energy(&p);
+                let p = self.brillouin_zone.a + self.brillouin_zone.basis.0 * i1 +
+                        self.brillouin_zone.basis.1 * j1;
+                let e = self.energy(&p);
                 if e < emin {
                     emin = e;
                 }
@@ -47,44 +60,40 @@ impl SL {
 
 impl Material for SL {
     // Выражение для энергетического спектра (в декартовых координатах)
-    pub fn energy(p: &Point) -> f64 {
-        let root = (1.0 + a * a * p.x * p.x).sqrt();
-        eps0 * (root + g * (1.0 - p.y.cos()) / root)
+    fn energy(&self, p: &Point) -> f64 {
+        let root = (1.0 + A * A * p.x * p.x).sqrt();
+        EPS0 * (root + G * (1.0 - p.y.cos()) / root)
     }
 
 
     // Градиент энергии в импульсном пространстве
-    pub fn energy_gradient(p: &Point) -> Vec2 {
-        let b = 1.0 + a * a * p.x * p.x;
+    fn energy_gradient(&self, p: &Point) -> Vec2 {
+        let b = 1.0 + A * A * p.x * p.x;
         let root = b.sqrt();
-        Vec2::new(eps0 * a * a * p.x / root * (1.0 - g * (1.0 - p.x.cos()) / b),
-                  g * eps0 / root * p.y.sin())
+        Vec2::new(EPS0 * A * A * p.x / root * (1.0 - G * (1.0 - p.x.cos()) / b),
+                  G * EPS0 / root * p.y.sin())
     }
 
     // Скорость
-    pub fn velocity(p: &Point) -> Vec2 {
-        energy_gradient(&p) * (d / hbar / c)
+    fn velocity(&self, p: &Point) -> Vec2 {
+        self.energy_gradient(&p) * (D / HBAR / C)
     }
 
-
-
-
-
-    #[cfg_attr(rustfmt, rustfmt_skip)]
-    pub fn momentums_with_energy_in_dir(e: f64, theta: f64, samples: usize,
-                                    precision: f64, bzone: &Bzone) -> Vec<Point> {
+    fn momentums(&self, e: f64, theta: f64) -> Vec<Point> {
+        let samples = 20;
+        let precision = 1e-5;
         let dir = Vec2::from_polar(1.0, theta);
-        let step = dir * pmax(theta, bzone) / (samples as f64);
+        let step = dir * self.brillouin_zone().pmax(theta) / (samples as f64);
 
         let mut ps: Vec<Point> = Vec::new();
 
         for i in 0..samples {
             let mut left = Point::from_vec2(step * i as f64);
             let mut right = left + step;
-            if (energy(&left) - e) * (energy(&right) - e) < 0.0 {
+            if (self.energy(&left) - e) * (self.energy(&right) - e) < 0.0 {
                 while (right - left).len() > precision {
                     let middle = left + (right - left) / 2.0;
-                    if (energy(&left) - e) * (energy(&middle) - e) < 0.0 {
+                    if (self.energy(&left) - e) * (self.energy(&middle) - e) < 0.0 {
                         right = middle;
                     } else {
                         left = middle;
@@ -95,5 +104,15 @@ impl Material for SL {
             }
         }
         ps
+    }
+
+    fn min_energy(&self) -> f64 {
+        self.minimum_energy
+    }
+    fn max_energy(&self) -> f64 {
+        self.maximum_energy
+    }
+    fn brillouin_zone(&self) -> &BrillouinZone {
+        &(self.brillouin_zone)
     }
 }

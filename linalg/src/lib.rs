@@ -109,6 +109,14 @@ impl Sub for Vec2 {
     }
 }
 
+impl Mul for Vec2 {
+    type Output = Self;
+
+    fn mul(self, _rhs: Vec2) -> Vec2 {
+        Vec2::new(self.x * _rhs.x, self.y * _rhs.y)
+    }
+}
+
 impl Mul<f64> for Vec2 {
     type Output = Self;
 
