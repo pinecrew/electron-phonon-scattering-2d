@@ -1,3 +1,17 @@
+//! Probability is a program for calculation probability of electron-phonon scattering.
+//!
+//! # Usage
+//! ````bash
+//! $ probability [config]
+//! ````
+//! where [config] is a ini-file. If no file is specified `config.ini` is used.
+//! This file __must__ include section `[probability]` with following contents:
+//!
+//! * output -- path to output file
+//! * energy_samples -- path to output file
+//! * probability_error -- relative error of probability
+//! * threads -- number of threads
+
 extern crate ini;
 extern crate scoped_threadpool;
 extern crate scattering;
