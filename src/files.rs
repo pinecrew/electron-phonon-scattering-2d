@@ -43,32 +43,32 @@ pub fn clean_result(fname: &str) {
     let _ = remove_file(fname);
 }
 
-// pub fn append_result_line(fname: &str, fields: &Fields, result: &Stats) {
-//     let file = OpenOptions::new()
-//                    .create(true)
-//                    .write(true)
-//                    .append(true)
-//                    .open(fname)
-//                    .unwrap();
-//     let mut writer = BufWriter::new(file);
-//     write!(writer,
-//            "{} {} {} {} {} {} {} {} {} ",
-//            fields.E.0,
-//            fields.E.1,
-//            fields.E.2,
-//            fields.B.0,
-//            fields.B.1,
-//            fields.B.2,
-//            fields.omega.0,
-//            fields.omega.1,
-//            fields.phi)
-//         .unwrap();
-//     write!(writer,
-//            "{} {} {} {} {}\n",
-//            result.current,
-//            result.current_std,
-//            result.optical,
-//            result.acoustic,
-//            result.tau)
-//         .unwrap();
-// }
+pub fn append_result_line(fname: &str, fields: &Fields, result: &Stats) {
+    let file = OpenOptions::new()
+                   .create(true)
+                   .write(true)
+                   .append(true)
+                   .open(fname)
+                   .unwrap();
+    let mut writer = BufWriter::new(file);
+    write!(writer,
+           "{} {} {} {} {} {} {} {} {} ",
+           fields.e.0,
+           fields.e.1,
+           fields.e.2,
+           fields.b.0,
+           fields.b.1,
+           fields.b.2,
+           fields.omega.1,
+           fields.omega.2,
+           fields.phi)
+        .unwrap();
+    write!(writer,
+           "{} {} {} {} {}\n",
+           result.current,
+           result.current_std,
+           result.optical,
+           result.acoustic,
+           result.tau)
+        .unwrap();
+}

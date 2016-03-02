@@ -8,8 +8,8 @@ pub struct Phonons {
 
 impl Phonons {
     pub fn new(optical_energy: f64,
-               acoustic_constant: f64,
                optical_constant: f64,
+               acoustic_constant: f64,
                energies: Vec<f64>,
                probabilities: Vec<f64>)
                -> Phonons {

@@ -19,6 +19,8 @@ extern crate linalg;
 
 mod material;
 mod files;
+#[macro_use]
+mod config;
 
 use std::env::args;
 use ini::Ini;
@@ -27,9 +29,6 @@ use scattering::material::Material;
 use scattering::probability::probability;
 use material::SL;
 use files::write_probabilities;
-
-#[macro_use]
-mod config;
 
 fn main() {
     let file_name = match args().nth(1) {

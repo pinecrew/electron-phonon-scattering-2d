@@ -46,11 +46,23 @@ fn runge<F>(p: &Point, force: F, t: f64, dt: f64) -> Point
     *p + (k1 + k2 * 2.0 + k3 * 2.0 + k4) * dt / 6.0
 }
 
+#[derive(Clone)]
 pub struct Summary {
     pub average_speed: Vec2,
     pub acoustic: u32,
     pub optical: u32,
     pub tau: f64,
+}
+
+impl Summary {
+    pub fn new(v: Vec2, a: u32, o: u32, t: f64) -> Summary {
+        Summary {
+            average_speed: v,
+            acoustic: a,
+            optical: o,
+            tau: t,
+        }
+    }
 }
 
 pub struct Modelling {
