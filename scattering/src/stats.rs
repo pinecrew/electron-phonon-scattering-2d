@@ -1,33 +1,26 @@
 use linalg::Vec2;
+use modelling::Summary;
 
-// pub struct EnsembleStats {
-//     pub current: Vec2,
-//     pub current_std: Vec2,
-//     pub optical: f64,
-//     pub acoustic: f64,
-//     pub tau: f64
-// }
+pub struct Stats {
+    pub current: Vec2,
+    pub current_std: Vec2,
+    pub optical: f64,
+    pub acoustic: f64,
+    pub tau: f64,
+}
 
-// impl EnsembleStats {
-//     pub fn new(current : Vec2, current_std : Vec2, optical : f64, acoustic : f64, tau : f64) -> EnsembleStats {
-//         EnsembleStats {
-//             current: current,
-//             current_std: current_std,
-//             optical: optical,
-//             acoustic: acoustic,
-//             tau: tau
-//         }
-//     }
-
-//     pub fn from_ensemble(ensemble : &[ParticleStats]) -> EnsembleStats {
-//         let average_speed : Vec<Vec2> = ensemble.iter().map(|x| x.average_speed).collect();
-//         EnsembleStats::new(mean_Vec2(&average_speed),
-//                            std_mean_Vec2(&average_speed),
-//                            mean_u32(ensemble.iter().map(|x| x.optical).collect::<Vec<u32>>().as_ref()),
-//                            mean_u32(ensemble.iter().map(|x| x.acoustic).collect::<Vec<u32>>().as_ref()),
-//                            mean_f64(ensemble.iter().map(|x| x.tau).collect::<Vec<f64>>().as_ref()))
-//     }
-// }
+impl Stats {
+    pub fn from_ensemble(ensemble: &[Summary]) -> Stats {
+        let average_speed: Vec<Vec2> = ensemble.iter().map(|x| x.average_speed).collect();
+        Stats {
+            current: average_speed.mean(),
+            current_std: average_speed.mean_std(),
+            optical: ensemble.iter().map(|x| x.optical).collect::<Vec<u32>>().mean(),
+            acoustic: ensemble.iter().map(|x| x.acoustic).collect::<Vec<u32>>().mean(),
+            tau: ensemble.iter().map(|x| x.tau).collect::<Vec<f64>>().mean(),
+        }
+    }
+}
 
 pub trait Mean {
     type Output;
