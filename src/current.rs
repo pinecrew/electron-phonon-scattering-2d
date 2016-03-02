@@ -43,8 +43,9 @@ fn main() {
     let threads: usize = get_element!(section, "threads");
 
 
-    clean_result(&plot.output);
-    for f in plot.gen_fields(fields) {
+    let plot_output = plot.output.clone();
+    clean_result(&plot_output);
+    for f in plot.gen_fields(&fields) {
         let result = stats(dt,
                            all_time,
                            particles,
@@ -53,7 +54,7 @@ fn main() {
                            &fields,
                            &phonons,
                            threads);
-        append_result_line(&plot.output, &f, &result);
+        append_result_line(&plot_output, &f, &result);
     }
 }
 
@@ -117,8 +118,8 @@ impl Plot {
             current: 0,
         }
     }
-    pub fn gen_fields(mut self, f: Fields) -> Self {
-        self.fields = f;
+    pub fn gen_fields(mut self, f: &Fields) -> Self {
+        self.fields = f.clone();
         self
     }
 }
@@ -148,7 +149,7 @@ pub fn phonons_from_config(conf: &Ini) -> Phonons {
     Phonons::new(optical_energy, optical_constant, acoustic_constant, e, p)
 }
 
-fn stats<T: Material>(dt: f64,
+fn stats<T: Material + Sync>(dt: f64,
                       all_time: f64,
                       particles: usize,
                       temperature: f64,
