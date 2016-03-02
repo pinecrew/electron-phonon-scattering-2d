@@ -6,6 +6,7 @@ extern crate linalg;
 mod material;
 mod files;
 
+use std::env::args;
 use ini::Ini;
 use scoped_threadpool::Pool;
 use scattering::material::Material;
@@ -17,7 +18,9 @@ use files::write_probabilities;
 mod config;
 
 fn main() {
-    let conf = Ini::load_from_file("config.ini").unwrap();
+    let file_name = args().nth(1)
+                          .expect("please input a file!");
+    let conf = Ini::load_from_file(&file_name).unwrap();
     let prob = conf.section(Some("probability".to_owned())).unwrap();
     let energy_samples: usize = get_element!(prob, "energy_samples");
     let error: f64 = get_element!(prob, "probability_error");
