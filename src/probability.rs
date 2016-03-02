@@ -6,7 +6,6 @@ extern crate linalg;
 mod material;
 mod files;
 
-use std::sync::Arc;
 use ini::Ini;
 use scoped_threadpool::Pool;
 use scattering::material::Material;
@@ -26,9 +25,9 @@ fn main() {
     let threads: usize = get_element!(prob, "threads");
 
 
-    let material = Arc::new(Box::new(SL::new()));
+    let material = SL::new();
     let mut energies: Vec<f64> = Vec::with_capacity(energy_samples);
-    let mut probabilities: Vec<f64> = Vec::with_capacity(energy_samples);
+    let mut probabilities: Vec<f64> = vec![0.0; energy_samples];
 
     for i in 0..energy_samples {
         let e = material.min_energy() +
@@ -41,11 +40,11 @@ fn main() {
 
     pool.scoped(|scope| {
         for (index, item) in probabilities.iter_mut().enumerate() {
-            let material = material.clone().deref();
+            let ref material = material;
             let error = error.clone();
             let energy = energies[index];
             scope.execute(move || {
-                *item = probability(energy, &material, error);
+                *item = probability(energy, material, error);
             });
         }
     });
