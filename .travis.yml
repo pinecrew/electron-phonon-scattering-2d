@@ -1,6 +1,11 @@
+sudo: false
 language: rust
 script:
-    - cargo test -p linalg --verbose
-    - cargo test -p scattering --verbose
-    - cargo test --verbose
-    - cargo build --verbose
+ - |
+    cargo test -p linalg --verbose &&
+    cargo test -p scattering --verbose &&
+    cargo test --verbose &&
+    cargo build --verbose
+cache:
+ directories:
+  - $HOME/.cargo
