@@ -1,1 +1,6 @@
 language: rust
+script:
+    - cargo test -p linalg --verbose
+    - cargo test -p scattering --verbose
+    - cargo test --verbose
+    - cargo build --verbose
