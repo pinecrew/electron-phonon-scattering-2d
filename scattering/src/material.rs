@@ -94,3 +94,43 @@ impl BrillouinZone {
         res
     }
 }
+
+macro_rules! assert_delta {
+    ($x:expr, $y:expr, $d:expr) => {
+        if !($x - $y < $d && $y - $x < $d) { panic!(); }
+    }
+}
+
+#[test]
+fn test_pmax() {
+    let mut bz = BrillouinZone::new(Point::new(-4.0, -3.0),
+                                Point::new(4.0, -3.0),
+                                Point::new(-4.0, 3.0));
+    assert_delta!(bz.pmax(0.0), 4.0, 1e-10);
+    assert_delta!(bz.pmax((0.75f64).atan()), 5.0, 1e-10);
+    assert_delta!(bz.pmax((0.5f64).atan()), 20f64.sqrt(), 1e-10);
+    assert_delta!(bz.pmax((-0.75f64).atan()), 5.0, 1e-10);
+
+    bz = BrillouinZone::new(Point::new(-4.0, -3.0),
+                            Point::new(0.0, -3.0),
+                            Point::new(0.0, 3.0));
+    assert_delta!(bz.pmax(0.0), 2.0, 1e-10);
+    assert_delta!(bz.pmax((0.75f64).atan()), 5.0, 1e-10);
+    assert_delta!(bz.pmax((0.5f64).atan()), 11.25f64.sqrt(), 1e-10);
+    assert_delta!(bz.pmax((-1.5f64).atan()), 3.25f64.sqrt(), 1e-10);
+}
+
+#[test]
+fn test_to_first_bz() {
+    let mut bz = BrillouinZone::new(Point::new(-4.0, -3.0),
+                                Point::new(4.0, -3.0),
+                                Point::new(-4.0, 3.0));
+    assert_eq!(bz.to_first_bz(&Point::new(5.0, 3.0)), Point::new(-3.0, -3.0));
+    assert!((bz.to_first_bz(&Point::new(15.3, -23.7)) - Point::new(-0.7, 0.3)).len() < 1e-10);
+
+    bz = BrillouinZone::new(Point::new(-4.0, -3.0),
+                            Point::new(0.0, -3.0),
+                            Point::new(0.0, 3.0));
+    assert_eq!(bz.to_first_bz(&Point::new(5.0, 3.0)), Point::new(-3.0, -3.0));
+    assert!((bz.to_first_bz(&Point::new(15.3, -23.7)) - Point::new(-0.7, 0.3)).len() < 1e-10);
+}

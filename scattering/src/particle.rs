@@ -45,6 +45,51 @@ fn runge<F>(p: &Point, force: F, t: f64, dt: f64) -> Point
     *p + (k1 + k2 * 2.0 + k3 * 2.0 + k4) * dt / 6.0
 }
 
+#[test]
+fn runge_circle() {
+    use std::f64::consts::PI;
+    let f = |p: &Point, _:f64| p.position().cross(1.0);
+    let dt = 0.01;
+    let mut p = Point::new(1.0, 0.0);
+    let mut t = 0.0;
+    while t < PI {
+        p = runge(&p, &f, t, dt);
+        t += dt;
+    }
+    p = runge(&p, &f, t, PI-t);
+    assert!((p - Point::new(-1.0, 0.0)).len() < 1e-8);
+}
+
+#[test]
+fn runge_parabola() {
+    let f = |_: &Point, t:f64| Vec2::new(0.0, t);
+    let dt = 0.01;
+    let mut p = Point::new(1.0, 0.0);
+    let mut t = 0.0;
+    while t < 1.0 {
+        p = runge(&p, &f, t, dt);
+        t += dt;
+    }
+    p = runge(&p, &f, t, 1.0-t);
+    assert!((p - Point::new(1.0, 0.5)).len() < 1e-8);
+}
+
+#[test]
+fn runge_sin() {
+    use std::f64::consts::PI;
+    let f = |_: &Point, t:f64| Vec2::new(0.0, t.sin());
+    let dt = 0.01;
+    let mut p = Point::new(1.0, 0.0);
+    let mut t = 0.0;
+    while t < PI {
+        p = runge(&p, &f, t, dt);
+        t += dt;
+    }
+    p = runge(&p, &f, t, PI-t);
+    assert!((p - Point::new(1.0, 2.0)).len() < 1e-8);
+}
+
+
 #[derive(Clone)]
 pub struct Summary {
     pub average_speed: Vec2,
