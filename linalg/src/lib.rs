@@ -1,50 +1,96 @@
-#![allow(dead_code)]
+//! Simple library to work with 2D vectors and points
+
+#![warn(missing_docs)]
 use std::ops::{Add, Sub, Mul, Div, Neg};
 use std::cmp::PartialEq;
 use std::fmt;
 use std::str::FromStr;
 use std::num;
 
+/// 2D vector in cortesian coordinates
 #[derive(Debug, Clone, Copy)]
 pub struct Vec2 {
+    /// component of vector
     pub x: f64,
+    /// component of vector
     pub y: f64,
 }
 
+/// 2D point in cortesian coordinates
 #[derive(Debug, Clone, Copy)]
 pub struct Point {
+    /// component of point
     pub x: f64,
+    /// component of point
     pub y: f64,
 }
 
 impl Vec2 {
+    /// Constructs a new `Vec2`.
     pub fn new(x: f64, y: f64) -> Vec2 {
         Vec2 { x: x, y: y }
     }
+    /// Constructs a new `Vec2` from polar coordinates $(r, \theta)$.
     pub fn from_polar(r: f64, theta: f64) -> Vec2 {
         Vec2 {
             x: r * f64::cos(theta),
             y: r * f64::sin(theta),
         }
     }
+    /// Create a zero `Vec2`
     pub fn zero() -> Vec2 {
         Vec2::new(0.0, 0.0)
     }
+    /// Scalar product
     pub fn dot(self, b: Vec2) -> f64 {
         self.x * b.x + self.y * b.y
     }
+    /// Vector length
     pub fn len(self) -> f64 {
         self.dot(self).sqrt()
     }
+    /// Unary vector, co-directed with given
     pub fn ort(self) -> Vec2 {
         self / self.len()
     }
+    /// Squares of the vector coordinates
     pub fn sqr(&self) -> Vec2 {
         Vec2::new(self.x.powi(2), self.y.powi(2))
     }
+    /// Square root of vector coordinates
     pub fn sqrt(&self) -> Vec2 {
         Vec2::new(self.x.sqrt(), self.y.sqrt())
     }
+}
+/// Constructs dual basis for given.
+///
+/// Dual basis $(b_1, b_2)$ for basis $(a_1, a_2)$ satisfies relation
+/// $$a_i \cdot b_j = \delta_{ij}$$
+///
+/// # Example
+/// ```
+/// use linalg::{Vec2, dual_basis};
+///
+/// let a1 = Vec2::new(2.0, 0.0);
+/// let a2 = Vec2::new(3.0, 4.0);
+///
+/// let (b1, b2) = dual_basis((a1, a2));
+/// assert_eq!(b1, Vec2::new(0.5, -0.375));
+/// assert_eq!(b2, Vec2::new(0.0, 0.25));
+/// ```
+pub fn dual_basis(basis: (Vec2, Vec2)) -> (Vec2, Vec2) {
+    let (a, b) = basis;
+
+    // At first, construct vectors a1 and b1 such that
+    // a1.dot(b) = 0 и b1.dot(a) = 0
+    let a1 = a - b * a.dot(b) / b.dot(b);
+    let b1 = b - a * b.dot(a) / a.dot(a);
+
+    // And second, normalize them
+    let a2 = a1 / a.dot(a1);
+    let b2 = b1 / b.dot(b1);
+
+    (a2, b2)
 }
 
 impl Add for Vec2 {
@@ -60,6 +106,14 @@ impl Sub for Vec2 {
 
     fn sub(self, _rhs: Self) -> Self {
         Vec2::new(self.x - _rhs.x, self.y - _rhs.y)
+    }
+}
+
+impl Mul for Vec2 {
+    type Output = Self;
+
+    fn mul(self, _rhs: Vec2) -> Vec2 {
+        Vec2::new(self.x * _rhs.x, self.y * _rhs.y)
     }
 }
 
@@ -83,21 +137,50 @@ impl Div<f64> for Vec2 {
 }
 
 impl Point {
+    /// Constructs a new `Point`
+    ///
+    /// #Examples
+    ///
+    /// ```
+    /// use linalg::Point;
+    /// // ..
+    /// // create `Point` with coords (1.5, 3.4)
+    /// let a: Point = Point::new(1.5, 3.4);
+    /// // return: a = 1.5 3.4
+    /// println!("a = {}", a);
+    /// ```
     pub fn new(x: f64, y: f64) -> Point {
         Point { x: x, y: y }
     }
+    /// Constructs a new `Point` from polar coordinates $(r, \theta)$.
     pub fn from_polar(r: f64, theta: f64) -> Point {
         Point {
             x: r * f64::cos(theta),
             y: r * f64::sin(theta),
         }
     }
+    /// Constructs a zero `Point`
+    ///
+    /// #Examples
+    ///
+    /// ```
+    /// use linalg::Point;
+    /// // ...
+    /// // create a zero `Point`
+    /// let a = Point::zero();
+    /// // create b `Point`
+    /// let b = Point::new(0.0, 0.0);
+    /// // a == b
+    /// assert_eq!(a, b)
+    /// ```
     pub fn zero() -> Point {
         Point::new(0.0, 0.0)
     }
+    /// Construct `Point` from given `Vec2`
     pub fn from_vec2(v: Vec2) -> Point {
         Point::new(v.x, v.y)
     }
+    /// ?
     pub fn position(self) -> Vec2 {
         Vec2::new(self.x, self.y)
     }
