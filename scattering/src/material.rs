@@ -19,6 +19,12 @@ pub trait Material {
     fn momentums(&self, energy: f64, theta: f64) -> Vec<Point>;
     /// brillouin zone structure
     fn brillouin_zone(&self) -> &BrillouinZone;
+    /// optical phonon energy
+    fn optical_energy(&self) -> f64;
+    /// optical phonon scattering probability
+    fn optical_scattering(&self, p: &Point) -> f64;
+    /// acoustic phonon scattering probability
+    fn acoustic_scattering(&self, p: &Point) -> f64;
 }
 
 #[derive(Clone)]

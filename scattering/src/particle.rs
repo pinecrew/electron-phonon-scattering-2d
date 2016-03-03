@@ -1,7 +1,6 @@
-//! Modelling one particle movement in material under electromagnetic fields with phonon scattering
+//! Particle one particle movement in material under electromagnetic fields with phonon scattering
 
 use material::Material;
-use phonons::Phonons;
 use linalg::{Point, Vec2, Cross};
 use rng::Rng;
 
@@ -63,26 +62,32 @@ impl Summary {
             tau: t,
         }
     }
+    pub fn empty() -> Summary {
+        Summary {
+            average_speed: Vec2::zero(),
+            acoustic: 0,
+            optical: 0,
+            tau: 0.0,
+        }
+    }
 }
 
-pub struct Modelling {
-    dt: f64,
-    all_time: f64,
+pub struct Particle<'a, T: 'a + Material> {
     init_condition: Point,
     seed: u32,
+    m: &'a T,
 }
 
-impl Modelling {
-    pub fn new(dt: f64, all_time: f64, init_condition: Point, seed: u32) -> Modelling {
-        Modelling {
-            dt: dt,
-            all_time: all_time,
+impl<'a, T: 'a + Material> Particle<'a, T> {
+    pub fn new(m: &T, init_condition: Point, seed: u32) -> Particle<T> {
+        Particle {
+            m: m,
             init_condition: init_condition,
             seed: seed,
         }
     }
 
-    pub fn run<T: Material>(&self, m: &T, f: &Fields, ph: &Phonons) -> Summary {
+    pub fn run(&self, dt: f64, all_time: f64, f: &Fields) -> Summary {
         use std::f64::consts::PI;
 
         let mut rng = Rng::new(self.seed);
@@ -97,27 +102,27 @@ impl Modelling {
 
         let force = |p: &Point, t: f64| -> Vec2 {
             f.e.0 + f.e.1 * (f.omega.1 * t).cos() + f.e.2 * (f.omega.2 * t + f.phi).cos() +
-            m.velocity(p)
+            self.m.velocity(p)
              .cross(f.b.0 + f.b.1 * (f.omega.1 * t).cos() + f.b.2 * (f.omega.2 * t + f.phi).cos())
         };
 
         let mut r = -rng.uniform().ln();
-        while t < self.all_time {
-            let v = m.velocity(&p);
+        while t < all_time {
+            let v = self.m.velocity(&p);
 
-            int_v_dt = int_v_dt + v * self.dt;
+            int_v_dt = int_v_dt + v * dt;
 
-            p = runge(&p, &force, t, self.dt); // решаем уравнения движения
+            p = runge(&p, &force, t, dt); // решаем уравнения движения
 
             // приводим импульс к зоне
-            p = m.brillouin_zone().to_first_bz(&p);
+            p = self.m.brillouin_zone().to_first_bz(&p);
 
-            t += self.dt;
+            t += dt;
 
-            let mut e = m.energy(&p);
-            let dwlo = ph.optical_constant * ph.probability(e - ph.optical_energy); // 0, если выпал из минизоны
-            let dwla = ph.acoustic_constant * ph.probability(e);
-            wsum += (dwla + dwlo) * self.dt;
+            let mut e = self.m.energy(&p);
+            let dwlo = self.m.optical_scattering(&p); // 0, если выпал из минизоны
+            let dwla = self.m.acoustic_scattering(&p);
+            wsum += (dwla + dwlo) * dt;
 
             if wsum > r {
                 r = -rng.uniform().ln();
@@ -125,7 +130,7 @@ impl Modelling {
                 if dwlo / (dwla + dwlo) > rng.uniform() {
                     n_opt += 1; // наращиваем счетчик рассеяний на оптических
                              // фононах
-                    e -= ph.optical_energy;
+                    e -= self.m.optical_energy();
                 } else {
                     n_ac += 1; // наращиваем счетчик рассеяний на акустических фононах
                 }
@@ -133,7 +138,7 @@ impl Modelling {
                 while count > 0 {
                     let theta = 2.0 * PI * rng.uniform(); // случайным образом
                     // разыгрываем направление квазиимпульса
-                    let ps = m.momentums(e, theta);
+                    let ps = self.m.momentums(e, theta);
                     if ps.len() > 0 {
                         p = ps[0];
                         break;

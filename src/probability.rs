@@ -43,7 +43,7 @@ fn main() {
     let threads: usize = get_element!(prob, "threads");
 
 
-    let material = SL::new();
+    let material = SL::without_phonons();
     let mut energies: Vec<f64> = Vec::with_capacity(energy_samples);
     let mut probabilities: Vec<f64> = vec![0.0; energy_samples];
 

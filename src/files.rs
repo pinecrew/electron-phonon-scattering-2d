@@ -3,7 +3,7 @@ use std::io::{BufReader, BufWriter};
 use std::io::prelude::*;
 
 
-use scattering::modelling::Fields;
+use scattering::particle::Fields;
 use scattering::stats::Stats;
 
 pub fn read_probabilities(fname: &str) -> (Vec<f64>, Vec<f64>) {

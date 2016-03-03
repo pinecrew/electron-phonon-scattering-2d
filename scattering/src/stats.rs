@@ -1,5 +1,5 @@
 use linalg::Vec2;
-use modelling::Summary;
+use particle::Summary;
 
 pub struct Stats {
     pub current: Vec2,

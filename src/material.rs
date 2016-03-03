@@ -1,5 +1,6 @@
 use scattering::material::{Material, BrillouinZone};
 use linalg::{Point, Vec2};
+use files::read_probabilities;
 use std::f64::consts::PI;
 
 const VF: f64 = 1e6;
@@ -16,10 +17,17 @@ pub struct SL {
     minimum_energy: f64,
     maximum_energy: f64,
     brillouin_zone: BrillouinZone,
+
+    // phonons:
+    optical_energy: f64,
+    acoustic_constant: f64,
+    optical_constant: f64,
+    energies: Vec<f64>,
+    probabilities: Vec<f64>,
 }
 
 impl SL {
-    pub fn new() -> SL {
+    pub fn without_phonons() -> SL {
         let a = Point::new(-30.0, -PI);
         let b = Point::new(30.0, -PI);
         let d = Point::new(-30.0, PI);
@@ -28,10 +36,30 @@ impl SL {
             minimum_energy: 0.0,
             maximum_energy: 0.0,
             brillouin_zone: brillouin_zone,
+            optical_energy: 0.0,
+            optical_constant: 0.0,
+            acoustic_constant: 0.0,
+            energies: Vec::new(),
+            probabilities: Vec::new(),
         };
         let (min, max) = s.get_energy_limits();
         s.minimum_energy = min;
         s.maximum_energy = max;
+        s
+    }
+
+    pub fn with_phonons(optical_energy: f64,
+                        optical_constant: f64,
+                        acoustic_constant: f64,
+                        fname: &str)
+                        -> SL {
+        let mut s = SL::without_phonons();
+        let (e, p) = read_probabilities(fname);
+        s.optical_energy = optical_energy;
+        s.optical_constant = optical_constant;
+        s.acoustic_constant = acoustic_constant;
+        s.energies = e;
+        s.probabilities = p;
         s
     }
 
@@ -55,6 +83,19 @@ impl SL {
             }
         }
         (emin, emax)
+    }
+
+    fn probability(&self, energy: f64) -> f64 {
+        let step = self.energies[1] - self.energies[0];
+
+        if energy < self.energies[0] || energy > self.energies[self.energies.len() - 1] {
+            return 0.0;
+        }
+
+        let pos = (energy - self.energies[0]) / step;
+        let i = pos.floor() as usize;
+        let w = pos - pos.floor();
+        self.probabilities[i] * (1.0 - w) + self.probabilities[i + 1] * w
     }
 }
 
@@ -114,5 +155,14 @@ impl Material for SL {
     }
     fn brillouin_zone(&self) -> &BrillouinZone {
         &(self.brillouin_zone)
+    }
+    fn optical_energy(&self) -> f64 {
+        self.optical_energy
+    }
+    fn optical_scattering(&self, p: &Point) -> f64 {
+        self.optical_constant * self.probability(self.energy(p) - self.optical_energy)
+    }
+    fn acoustic_scattering(&self, p: &Point) -> f64 {
+        self.acoustic_constant * self.probability(self.energy(p))
     }
 }

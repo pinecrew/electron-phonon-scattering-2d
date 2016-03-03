@@ -12,12 +12,8 @@ use std::env::args;
 use ini::Ini;
 use time::get_time;
 use scoped_threadpool::Pool;
-use scattering::modelling::{Modelling, Fields, Summary};
-use scattering::stats::Stats;
-use scattering::phonons::Phonons;
-use scattering::material::Material;
-use scattering::boltzmann::BoltzmannDistrib;
-use scattering::rng::Rng;
+use scattering::particle::{Particle, Fields, Summary};
+use scattering::{Material, Stats, create_ensemble};
 use linalg::Vec2;
 use files::{clean_result, append_result_line, read_probabilities};
 use material::SL;
@@ -31,11 +27,15 @@ fn main() {
     let conf = Ini::load_from_file(&file_name).unwrap();
     let plot = Plot::from_config(&conf);
     let fields = fields_from_config(&conf);
-    let phonons = phonons_from_config(&conf);
 
-    let m = SL::new();
+    let mut section = conf.section(Some("phonons".to_owned())).unwrap();
+    let optical_energy: f64 = get_element!(section, "optical_energy");
+    let optical_constant: f64 = get_element!(section, "optical_constant");
+    let acoustic_constant: f64 = get_element!(section, "acoustic_constant");
+    let input: String = get_element!(section, "input");
+    let m = SL::with_phonons(optical_energy, optical_constant, acoustic_constant, &input);
 
-    let section = conf.section(Some("modelling".to_owned())).unwrap();
+    section = conf.section(Some("modelling".to_owned())).unwrap();
     let dt: f64 = get_element!(section, "dt");
     let all_time: f64 = get_element!(section, "all_time");
     let temperature: f64 = get_element!(section, "temperature");
@@ -46,14 +46,25 @@ fn main() {
     let plot_output = plot.output.clone();
     clean_result(&plot_output);
     for f in plot.gen_fields(&fields) {
-        let result = stats(dt,
-                           all_time,
-                           particles,
-                           temperature,
-                           &m,
-                           &fields,
-                           &phonons,
-                           threads);
+        let ensemble = create_ensemble(particles, &m, temperature, get_time().nsec as u32);
+
+        let mut ensemble_summary: Vec<Summary> =
+            vec![Summary::new(Vec2::zero(), 0, 0, 0.0); particles];
+        let mut pool = Pool::new(threads as u32);
+
+        pool.scoped(|scope| {
+            for (index, item) in ensemble_summary.iter_mut().enumerate() {
+                let dt = dt;
+                let all_time = all_time;
+                let ref fields = f;
+                let ref particle = ensemble[index];
+                scope.execute(move || {
+                    *item = particle.run(dt, all_time, fields);
+                });
+            }
+        });
+
+        let result = Stats::from_ensemble(&ensemble_summary);
         append_result_line(&plot_output, &f, &result);
     }
 }
@@ -139,54 +150,12 @@ pub fn fields_from_config(conf: &Ini) -> Fields {
     Fields::new((E0, E1, E2), (B0, B1, B2), (omega1, omega2), phi)
 }
 
-pub fn phonons_from_config(conf: &Ini) -> Phonons {
-    let section = conf.section(Some("phonons".to_owned())).unwrap();
-    let optical_energy: f64 = get_element!(section, "optical_energy");
-    let optical_constant: f64 = get_element!(section, "optical_constant");
-    let acoustic_constant: f64 = get_element!(section, "acoustic_constant");
-    let fname: String = get_element!(section, "input");
-    let (e, p) = read_probabilities(&fname);
-    Phonons::new(optical_energy, optical_constant, acoustic_constant, e, p)
-}
-
-fn stats<T: Material + Sync>(dt: f64,
-                      all_time: f64,
-                      particles: usize,
-                      temperature: f64,
-                      material: &T,
-                      fields: &Fields,
-                      phonons: &Phonons,
-                      threads: usize)
-                      -> Stats {
-    let mut rng = Rng::new(get_time().nsec as u32);
-    let bd = BoltzmannDistrib::new(temperature, material);
-    let init_condition = bd.make_dist(rng.rand(), particles);
-    let mut seed: Vec<u32> = vec![0u32; particles];
-
-    for j in 0..particles {
-        seed[j] = rng.rand();
-    }
-
-    let mut ensemble: Vec<Summary> = vec![Summary::new(Vec2::zero(), 0, 0, 0.0); particles];
-    let mut pool = Pool::new(threads as u32);
-
-    pool.scoped(|scope| {
-        for (index, item) in ensemble.iter_mut().enumerate() {
-            let fields = fields;
-            let phonons = phonons;
-            let ic = init_condition[index];
-            let dt = dt;
-            let all_time = all_time;
-            let s = seed[index];
-            let material = material;
-            let fields = fields;
-            let phonons = phonons;
-            scope.execute(move || {
-                let particle = Modelling::new(dt, all_time, ic, s);
-                *item = particle.run(material, fields, phonons);
-            });
-        }
-    });
-
-    Stats::from_ensemble(&ensemble)
-}
+// pub fn phonons_from_config(conf: &Ini) -> Phonons {
+//     let section = conf.section(Some("phonons".to_owned())).unwrap();
+//     let optical_energy: f64 = get_element!(section, "optical_energy");
+//     let optical_constant: f64 = get_element!(section, "optical_constant");
+//     let acoustic_constant: f64 = get_element!(section, "acoustic_constant");
+//     let fname: String = get_element!(section, "input");
+//     let (e, p) = read_probabilities(&fname);
+//     Phonons::new(optical_energy, optical_constant, acoustic_constant, e, p)
+// }
