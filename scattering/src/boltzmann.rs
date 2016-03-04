@@ -49,14 +49,16 @@ impl<'a, T: 'a + Material> BoltzmannDistrib<'a, T> {
     pub fn new(temperature: f64, m: &T) -> BoltzmannDistrib<T> {
         let n = 1000;
         let mut angle_distrib: Vec<f64> = vec![0.0; n];
+        let angle_step = 2.0 * PI / n as f64;
         for i in 0..n - 1 {
-            let theta = 2.0 * PI * i as f64 / n as f64;
+            let theta = angle_step * i as f64;
             let pm = m.brillouin_zone().pmax(theta);
             let step = pm / (n - 1) as f64;
             angle_distrib[i + 1] = angle_distrib[i];
             for j in 0..n {
                 let p = step * j as f64;
-                angle_distrib[i + 1] += (-m.energy_polar(p, theta) / temperature).exp() * step;
+                angle_distrib[i + 1] += (-m.energy_polar(p, theta) / temperature).exp() * p *
+                                        step * angle_step;
             }
         }
         for i in 0..n {
@@ -87,7 +89,8 @@ impl<'a, T: 'a + Material> BoltzmannDistrib<'a, T> {
         for i in 0..n - 1 {
             let p = step * i as f64;
             dist[i + 1] = dist[i] +
-                          (-self.material.energy_polar(p, theta) / self.temperature).exp() * step;
+                          (-self.material.energy_polar(p, theta) / self.temperature).exp() * p *
+                          step;
         }
         for i in 0..n {
             dist[i] /= dist[n - 1];
@@ -102,4 +105,76 @@ impl<'a, T: 'a + Material> BoltzmannDistrib<'a, T> {
         let w = (r - self.angle_distrib[i]) / (self.angle_distrib[i + 1] - self.angle_distrib[i]);
         2.0 * PI * (i as f64 + w)
     }
+}
+
+#[test]
+fn test_boltzmann() {
+    use material::BrillouinZone;
+    use linalg::{Point, Vec2};
+
+    struct M {
+        brillouin_zone: BrillouinZone,
+    };
+    impl M {
+        fn new() -> M {
+            let bz = BrillouinZone::new(Point::new(-1.0, -1.0),
+                                        Point::new(1.0, -1.0),
+                                        Point::new(-1.0, 1.0));
+            M { brillouin_zone: bz }
+        }
+    }
+    impl Material for M {
+        fn energy(&self, p: &Point) -> f64 {
+            let q = p.position();
+            q.dot(q) / 20.0
+        }
+        fn energy_gradient(&self, p: &Point) -> Vec2 {
+            unimplemented!();
+        }
+        fn velocity(&self, p: &Point) -> Vec2 {
+            unimplemented!();
+        }
+        fn min_energy(&self) -> f64 {
+            0.0
+        }
+        fn max_energy(&self) -> f64 {
+            0.1
+        }
+        fn momentums(&self, energy: f64, theta: f64) -> Vec<Point> {
+            unimplemented!();
+        }
+        fn brillouin_zone(&self) -> &BrillouinZone {
+            &(self.brillouin_zone)
+        }
+        fn optical_energy(&self) -> f64 {
+            unimplemented!();
+        }
+        fn optical_scattering(&self, p: &Point) -> f64 {
+            unimplemented!();
+        }
+        fn acoustic_scattering(&self, p: &Point) -> f64 {
+            unimplemented!();
+        }
+    }
+    let ref m = M::new();
+    let temperature = 7e-3;
+    let bd = BoltzmannDistrib::new(temperature, m);
+    let init_condition = bd.make_dist(3_347_183_342u32, 10_000);
+    let es: Vec<f64> = init_condition.iter().map(|x| m.energy(x)).collect();
+    let intervals = 100;
+    let mut dist = vec![0f64; intervals];
+    let width = (m.max_energy() - m.min_energy()) / intervals as f64;
+    for e in es {
+        let p = ((e - m.min_energy()) / width).floor() as usize;
+        dist[p] += 1.0;
+    }
+    let x = width / temperature;
+    for i in 0..intervals {
+        dist[i] /= 10_000f64;
+        assert!((dist[i] -  x * (-(i as f64) * x).exp()).abs() < 3.0 * ((1.0 - x) / 10_000f64 / x).sqrt());
+    }
+
+
+    let ave = init_condition.iter().fold(Vec2::zero(), |acc, x| acc + x.position()) / 10_000f64;
+    assert!(ave.len() < 0.01);
 }
