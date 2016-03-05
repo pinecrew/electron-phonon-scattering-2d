@@ -137,7 +137,7 @@ impl Plot {
 
 pub fn fields_from_config(conf: &Ini) -> Fields {
     let section = conf.section(Some("fields".to_owned())).unwrap();
-    let mut f = Fields::zero()
+    let mut f = Fields::zero();
     f.e.0 = get_element!(section, "E0");
     f.e.1 = get_element!(section, "E1");
     f.e.2 = get_element!(section, "E2");
@@ -146,7 +146,7 @@ pub fn fields_from_config(conf: &Ini) -> Fields {
     f.b.2 = get_element!(section, "B2");
     f.omega.1 = get_element!(section, "omega1");
     f.omega.2 = get_element!(section, "omega2");
-    f.phi: f64 = get_element!(section, "phi");
+    f.phi = get_element!(section, "phi");
     f
 }
 
