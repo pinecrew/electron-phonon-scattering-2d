@@ -122,7 +122,7 @@ impl Material for SL {
 
     fn momentums(&self, e: f64, theta: f64) -> Vec<Point> {
         let samples = 20;
-        let precision = 1e-5;
+        let precision = 1e-7;
         let dir = Vec2::from_polar(1.0, theta);
         let step = dir * self.brillouin_zone().pmax(theta) / (samples as f64);
 

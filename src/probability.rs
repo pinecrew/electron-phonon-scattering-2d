@@ -33,7 +33,7 @@ use files::write_probabilities;
 fn main() {
     let file_name = match args().nth(1) {
         Some(file) => file,
-        None => "config.ini".to_owned()
+        None => "config.ini".to_owned(),
     };
     let conf = Ini::load_from_file(&file_name).unwrap();
     let prob = conf.section(Some("probability".to_owned())).unwrap();
@@ -49,7 +49,7 @@ fn main() {
 
     for i in 0..energy_samples {
         let e = material.min_energy() +
-                (material.max_energy() - material.min_energy()) /
+                (material.max_energy() - material.min_energy()) / 40.0 /
                 (energy_samples as f64 - 1.0) * (i as f64);
         energies.push(e);
     }
