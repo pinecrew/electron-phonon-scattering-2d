@@ -48,7 +48,7 @@ fn runge<F>(p: &Point, force: F, t: f64, dt: f64) -> Point
 #[test]
 fn runge_circle() {
     use std::f64::consts::PI;
-    let f = |p: &Point, _:f64| p.position().cross(1.0);
+    let f = |p: &Point, _: f64| p.position().cross(1.0);
     let dt = 0.01;
     let mut p = Point::new(1.0, 0.0);
     let mut t = 0.0;
@@ -56,13 +56,13 @@ fn runge_circle() {
         p = runge(&p, &f, t, dt);
         t += dt;
     }
-    p = runge(&p, &f, t, PI-t);
+    p = runge(&p, &f, t, PI - t);
     assert!((p - Point::new(-1.0, 0.0)).len() < 1e-8);
 }
 
 #[test]
 fn runge_parabola() {
-    let f = |_: &Point, t:f64| Vec2::new(0.0, t);
+    let f = |_: &Point, t: f64| Vec2::new(0.0, t);
     let dt = 0.01;
     let mut p = Point::new(1.0, 0.0);
     let mut t = 0.0;
@@ -70,14 +70,14 @@ fn runge_parabola() {
         p = runge(&p, &f, t, dt);
         t += dt;
     }
-    p = runge(&p, &f, t, 1.0-t);
+    p = runge(&p, &f, t, 1.0 - t);
     assert!((p - Point::new(1.0, 0.5)).len() < 1e-8);
 }
 
 #[test]
 fn runge_sin() {
     use std::f64::consts::PI;
-    let f = |_: &Point, t:f64| Vec2::new(0.0, t.sin());
+    let f = |_: &Point, t: f64| Vec2::new(0.0, t.sin());
     let dt = 0.01;
     let mut p = Point::new(1.0, 0.0);
     let mut t = 0.0;
@@ -85,7 +85,7 @@ fn runge_sin() {
         p = runge(&p, &f, t, dt);
         t += dt;
     }
-    p = runge(&p, &f, t, PI-t);
+    p = runge(&p, &f, t, PI - t);
     assert!((p - Point::new(1.0, 2.0)).len() < 1e-8);
 }
 
@@ -147,8 +147,10 @@ impl<'a, T: 'a + Material> Particle<'a, T> {
 
         let force = |p: &Point, t: f64| -> Vec2 {
             f.e.0 + f.e.1 * (f.omega.1 * t).cos() + f.e.2 * (f.omega.2 * t + f.phi).cos() +
-            self.m.velocity(p)
-             .cross(f.b.0 + f.b.1 * (f.omega.1 * t).cos() + f.b.2 * (f.omega.2 * t + f.phi).cos())
+            self.m
+                .velocity(p)
+                .cross(f.b.0 + f.b.1 * (f.omega.1 * t).cos() +
+                       f.b.2 * (f.omega.2 * t + f.phi).cos())
         };
 
         let mut r = -rng.uniform().ln();

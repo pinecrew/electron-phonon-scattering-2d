@@ -14,7 +14,6 @@ use time::get_time;
 use scoped_threadpool::Pool;
 use scattering::particle::{Particle, Fields, Summary};
 use scattering::{Material, Stats, create_ensemble};
-use linalg::Vec2;
 use files::{clean_result, append_result_line, read_probabilities};
 use material::SL;
 
@@ -49,7 +48,7 @@ fn main() {
         let ensemble = create_ensemble(particles, &m, temperature, get_time().nsec as u32);
 
         let mut ensemble_summary: Vec<Summary> =
-            vec![Summary::new(Vec2::zero(), 0, 0, 0.0); particles];
+            vec![Summary::empty(); particles];
         let mut pool = Pool::new(threads as u32);
 
         pool.scoped(|scope| {
@@ -138,16 +137,17 @@ impl Plot {
 
 pub fn fields_from_config(conf: &Ini) -> Fields {
     let section = conf.section(Some("fields".to_owned())).unwrap();
-    let E0: Vec2 = get_element!(section, "E0");
-    let E1: Vec2 = get_element!(section, "E1");
-    let E2: Vec2 = get_element!(section, "E2");
-    let B0: f64 = get_element!(section, "B0");
-    let B1: f64 = get_element!(section, "B1");
-    let B2: f64 = get_element!(section, "B2");
-    let omega1: f64 = get_element!(section, "omega1");
-    let omega2: f64 = get_element!(section, "omega2");
-    let phi: f64 = get_element!(section, "phi");
-    Fields::new((E0, E1, E2), (B0, B1, B2), (omega1, omega2), phi)
+    let mut f = Fields::zero()
+    f.e.0 = get_element!(section, "E0");
+    f.e.1 = get_element!(section, "E1");
+    f.e.2 = get_element!(section, "E2");
+    f.b.0 = get_element!(section, "B0");
+    f.b.1 = get_element!(section, "B1");
+    f.b.2 = get_element!(section, "B2");
+    f.omega.1 = get_element!(section, "omega1");
+    f.omega.2 = get_element!(section, "omega2");
+    f.phi: f64 = get_element!(section, "phi");
+    f
 }
 
 // pub fn phonons_from_config(conf: &Ini) -> Phonons {

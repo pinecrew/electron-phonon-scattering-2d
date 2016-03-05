@@ -111,7 +111,7 @@ impl Material for SL {
     fn energy_gradient(&self, p: &Point) -> Vec2 {
         let b = 1.0 + A * A * p.x * p.x;
         let root = b.sqrt();
-        Vec2::new(EPS0 * A * A * p.x / root * (1.0 - G * (1.0 - p.x.cos()) / b),
+        Vec2::new(EPS0 * A * A * p.x / root * (1.0 - G * (1.0 - p.y.cos()) / b),
                   G * EPS0 / root * p.y.sin())
     }
 

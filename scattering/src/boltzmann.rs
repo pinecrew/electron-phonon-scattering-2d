@@ -162,16 +162,17 @@ fn test_boltzmann() {
     let init_condition = bd.make_dist(3_347_183_342u32, 10_000);
     let es: Vec<f64> = init_condition.iter().map(|x| m.energy(x)).collect();
     let intervals = 100;
-    let mut dist = vec![0f64; intervals];
+    let mut dist = vec![0; intervals];
     let width = (m.max_energy() - m.min_energy()) / intervals as f64;
     for e in es {
         let p = ((e - m.min_energy()) / width).floor() as usize;
-        dist[p] += 1.0;
+        dist[p] += 1;
     }
     let x = width / temperature;
     for i in 0..intervals {
-        dist[i] /= 10_000f64;
-        assert!((dist[i] -  x * (-(i as f64) * x).exp()).abs() < 3.0 * ((1.0 - x) / 10_000f64 / x).sqrt());
+        let obtained = dist[i] as f64 / 10_000f64;
+        let prob = x * (-(i as f64) * x).exp();
+        assert!((obtained - prob).abs() < 3.0 * ((1.0 - prob) * prob / 10_000f64).sqrt());
     }
 
 
