@@ -49,7 +49,7 @@ fn main() {
 
     for i in 0..energy_samples {
         let e = material.min_energy() +
-                (material.max_energy() - material.min_energy()) / 40.0 /
+                (material.max_energy() - material.min_energy()) /
                 (energy_samples as f64 - 1.0) * (i as f64);
         energies.push(e);
     }
