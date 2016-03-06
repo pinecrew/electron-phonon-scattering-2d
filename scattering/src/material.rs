@@ -104,8 +104,8 @@ macro_rules! assert_delta {
 #[test]
 fn test_pmax() {
     let mut bz = BrillouinZone::new(Point::new(-4.0, -3.0),
-                                Point::new(4.0, -3.0),
-                                Point::new(-4.0, 3.0));
+                                    Point::new(4.0, -3.0),
+                                    Point::new(-4.0, 3.0));
     assert_delta!(bz.pmax(0.0), 4.0, 1e-10);
     assert_delta!(bz.pmax((0.75f64).atan()), 5.0, 1e-10);
     assert_delta!(bz.pmax((0.5f64).atan()), 20f64.sqrt(), 1e-10);
@@ -123,14 +123,16 @@ fn test_pmax() {
 #[test]
 fn test_to_first_bz() {
     let mut bz = BrillouinZone::new(Point::new(-4.0, -3.0),
-                                Point::new(4.0, -3.0),
-                                Point::new(-4.0, 3.0));
-    assert_eq!(bz.to_first_bz(&Point::new(5.0, 3.0)), Point::new(-3.0, -3.0));
+                                    Point::new(4.0, -3.0),
+                                    Point::new(-4.0, 3.0));
+    assert_eq!(bz.to_first_bz(&Point::new(5.0, 3.0)),
+               Point::new(-3.0, -3.0));
     assert!((bz.to_first_bz(&Point::new(15.3, -23.7)) - Point::new(-0.7, 0.3)).len() < 1e-10);
 
     bz = BrillouinZone::new(Point::new(-4.0, -3.0),
                             Point::new(0.0, -3.0),
                             Point::new(0.0, 3.0));
-    assert_eq!(bz.to_first_bz(&Point::new(5.0, 3.0)), Point::new(-3.0, -3.0));
+    assert_eq!(bz.to_first_bz(&Point::new(5.0, 3.0)),
+               Point::new(-3.0, -3.0));
     assert!((bz.to_first_bz(&Point::new(15.3, -23.7)) - Point::new(-0.7, 0.3)).len() < 1e-10);
 }

@@ -18,8 +18,6 @@ extern crate scattering;
 extern crate linalg; // need for material
 
 mod material;
-#[macro_use]
-mod config;
 
 use std::env::args;
 use std::fs::File;
@@ -29,6 +27,11 @@ use ini::Ini;
 use scoped_threadpool::Pool;
 use scattering::{Material, probability};
 use material::SL;
+
+macro_rules! get_element {
+    ($c:ident, $i:expr) => ($c.get($i).unwrap().parse().unwrap();)
+}
+
 
 fn main() {
     let file_name = match args().nth(1) {

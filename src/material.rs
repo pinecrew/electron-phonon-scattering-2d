@@ -170,10 +170,10 @@ impl Material for SL {
 }
 
 
-fn read_probabilities(fname: &str) -> (Vec<f64>, Vec<f64>) {
-    let file = File::open(fname)
+fn read_probabilities(filename: &str) -> (Vec<f64>, Vec<f64>) {
+    let file = File::open(filename)
                    .ok()
-                   .expect(&format!("Can't open {} file", fname));
+                   .expect(&format!("Can't open `{}`", filename));
     let reader = BufReader::new(file);
     let (mut a, mut b) = (Vec::new(), Vec::new());
     for line in reader.lines().filter_map(|result| result.ok()) {

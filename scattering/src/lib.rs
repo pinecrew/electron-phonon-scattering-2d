@@ -16,7 +16,11 @@ use particle::Particle;
 use rng::Rng;
 use boltzmann::BoltzmannDistrib;
 
-pub fn create_ensemble<T: Material>(n: usize, m: &T, temperature: f64, seed: u32) -> Vec<Particle<T>> {
+pub fn create_ensemble<T: Material>(n: usize,
+                                    m: &T,
+                                    temperature: f64,
+                                    seed: u32)
+                                    -> Vec<Particle<T>> {
     let mut rng = Rng::new(seed);
     let bd = BoltzmannDistrib::new(temperature, m);
     let init_condition = bd.make_dist(rng.rand(), n);

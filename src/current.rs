@@ -4,8 +4,6 @@ extern crate scoped_threadpool;
 extern crate scattering;
 extern crate linalg;
 
-#[macro_use]
-mod config;
 mod material;
 
 use std::env::args;
@@ -19,6 +17,9 @@ use scattering::particle::Summary;
 use scattering::{Fields, Stats, create_ensemble};
 use material::SL;
 
+macro_rules! get_element {
+    ($c:ident, $i:expr) => ($c.get($i).unwrap().parse().unwrap();)
+}
 
 fn main() {
     let file_name = match args().nth(1) {
@@ -136,7 +137,7 @@ fn plot_from_config(conf: &Ini) -> Plot {
     }
 }
 
-pub fn fields_from_config(conf: &Ini) -> Fields {
+fn fields_from_config(conf: &Ini) -> Fields {
     let section = conf.section(Some("fields".to_owned())).unwrap();
     let mut f = Fields::zero();
     f.e.0 = get_element!(section, "E0");
@@ -151,16 +152,16 @@ pub fn fields_from_config(conf: &Ini) -> Fields {
     f
 }
 
-pub fn clean_result(fname: &str) {
-    let _ = remove_file(fname);
+fn clean_result(filename: &str) {
+    let _ = remove_file(filename);
 }
 
-pub fn append_result_line(fname: &str, fields: &Fields, result: &Stats) {
+fn append_result_line(filename: &str, fields: &Fields, result: &Stats) {
     let file = OpenOptions::new()
                    .create(true)
                    .write(true)
                    .append(true)
-                   .open(fname)
+                   .open(filename)
                    .unwrap();
     let mut writer = BufWriter::new(file);
     write!(writer,
