@@ -1,7 +1,9 @@
+use std::fs::File;
+use std::io::{BufReader, BufRead};
+use std::f64::consts::PI;
+
 use scattering::material::{Material, BrillouinZone};
 use linalg::{Point, Vec2};
-use files::read_probabilities;
-use std::f64::consts::PI;
 
 const VF: f64 = 1e6;
 const HBAR: f64 = 6.5e-16;
@@ -165,4 +167,27 @@ impl Material for SL {
     fn acoustic_scattering(&self, p: &Point) -> f64 {
         self.acoustic_constant * self.probability(self.energy(p))
     }
+}
+
+
+fn read_probabilities(fname: &str) -> (Vec<f64>, Vec<f64>) {
+    let file = File::open(fname)
+                   .ok()
+                   .expect(&format!("Can't open {} file", fname));
+    let reader = BufReader::new(file);
+    let (mut a, mut b) = (Vec::new(), Vec::new());
+    for line in reader.lines().filter_map(|result| result.ok()) {
+        let mut data = line.split_whitespace();
+        let first = data.next()
+                        .expect("Can't get item");
+        let second = data.next()
+                         .expect("Can't get item");
+        a.push(first.parse::<f64>()
+                    .ok()
+                    .expect("Can't parse string"));
+        b.push(second.parse::<f64>()
+                     .ok()
+                     .expect("Can't parse string"));
+    }
+    (a, b)
 }

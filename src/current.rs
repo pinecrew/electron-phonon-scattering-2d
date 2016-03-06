@@ -3,18 +3,20 @@ extern crate time;
 extern crate scoped_threadpool;
 extern crate scattering;
 extern crate linalg;
-mod files;
+
 #[macro_use]
 mod config;
 mod material;
 
 use std::env::args;
+use std::fs::{OpenOptions, remove_file};
+use std::io::{BufWriter, Write};
+
 use ini::Ini;
 use time::get_time;
 use scoped_threadpool::Pool;
-use scattering::particle::{Fields, Summary};
-use scattering::{Stats, create_ensemble};
-use files::{clean_result, append_result_line};
+use scattering::particle::Summary;
+use scattering::{Fields, Stats, create_ensemble};
 use material::SL;
 
 
@@ -24,7 +26,7 @@ fn main() {
         None => "config.ini".to_owned(),
     };
     let conf = Ini::load_from_file(&file_name).unwrap();
-    let plot = Plot::from_config(&conf);
+    let plot = plot_from_config(&conf);
     let fields = fields_from_config(&conf);
 
     let mut section = conf.section(Some("phonons".to_owned())).unwrap();
@@ -41,13 +43,12 @@ fn main() {
     let particles: usize = get_element!(section, "particles");
     let threads: usize = get_element!(section, "threads");
 
-
-    let plot_output = plot.output.clone();
-    clean_result(&plot_output);
+    let output = plot.output.clone();
+    clean_result(&output);
     for f in plot.gen_fields(&fields) {
         let ensemble = create_ensemble(particles, &m, temperature, get_time().nsec as u32);
 
-        let mut ensemble_summary: Vec<Summary> = vec![Summary::empty(); particles];
+        let mut ensemble_summary = vec![Summary::empty(); particles];
         let mut pool = Pool::new(threads as u32);
 
         pool.scoped(|scope| {
@@ -63,7 +64,7 @@ fn main() {
         });
 
         let result = Stats::from_ensemble(&ensemble_summary);
-        append_result_line(&plot_output, &f, &result);
+        append_result_line(&output, &f, &result);
     }
 }
 
@@ -108,31 +109,32 @@ impl Iterator for Plot {
     }
 }
 
+
 impl Plot {
-    pub fn from_config(conf: &Ini) -> Plot {
-        let section = conf.section(Some("plot".to_owned())).unwrap();
-        let low: f64 = get_element!(section, "low");
-        let high: f64 = get_element!(section, "high");
-        let step: f64 = get_element!(section, "step");
-        let var: String = get_element!(section, "var");
-        let output: String = get_element!(section, "output");
-        Plot {
-            low: low,
-            high: high,
-            step: step,
-            var: var,
-            output: output,
-            fields: Fields::zero(),
-            n: 0,
-            current: 0,
-        }
-    }
     pub fn gen_fields(mut self, f: &Fields) -> Self {
         self.fields = f.clone();
         self
     }
 }
 
+fn plot_from_config(conf: &Ini) -> Plot {
+    let section = conf.section(Some("plot".to_owned())).unwrap();
+    let low: f64 = get_element!(section, "low");
+    let high: f64 = get_element!(section, "high");
+    let step: f64 = get_element!(section, "step");
+    let var: String = get_element!(section, "var");
+    let output: String = get_element!(section, "output");
+    Plot {
+        low: low,
+        high: high,
+        step: step,
+        var: var,
+        output: output,
+        fields: Fields::zero(),
+        n: 0,
+        current: 0,
+    }
+}
 
 pub fn fields_from_config(conf: &Ini) -> Fields {
     let section = conf.section(Some("fields".to_owned())).unwrap();
@@ -149,12 +151,36 @@ pub fn fields_from_config(conf: &Ini) -> Fields {
     f
 }
 
-// pub fn phonons_from_config(conf: &Ini) -> Phonons {
-//     let section = conf.section(Some("phonons".to_owned())).unwrap();
-//     let optical_energy: f64 = get_element!(section, "optical_energy");
-//     let optical_constant: f64 = get_element!(section, "optical_constant");
-//     let acoustic_constant: f64 = get_element!(section, "acoustic_constant");
-//     let fname: String = get_element!(section, "input");
-//     let (e, p) = read_probabilities(&fname);
-//     Phonons::new(optical_energy, optical_constant, acoustic_constant, e, p)
-// }
+pub fn clean_result(fname: &str) {
+    let _ = remove_file(fname);
+}
+
+pub fn append_result_line(fname: &str, fields: &Fields, result: &Stats) {
+    let file = OpenOptions::new()
+                   .create(true)
+                   .write(true)
+                   .append(true)
+                   .open(fname)
+                   .unwrap();
+    let mut writer = BufWriter::new(file);
+    write!(writer,
+           "{} {} {} {} {} {} {} {} {} ",
+           fields.e.0,
+           fields.e.1,
+           fields.e.2,
+           fields.b.0,
+           fields.b.1,
+           fields.b.2,
+           fields.omega.1,
+           fields.omega.2,
+           fields.phi)
+        .unwrap();
+    write!(writer,
+           "{} {} {} {} {}\n",
+           result.current,
+           result.current_std,
+           result.optical,
+           result.acoustic,
+           result.tau)
+        .unwrap();
+}

@@ -18,7 +18,6 @@ extern crate scattering;
 extern crate linalg; // need for material
 
 mod material;
-mod files;
 #[macro_use]
 mod config;
 

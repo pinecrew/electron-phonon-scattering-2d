@@ -3,12 +3,14 @@ extern crate linalg;
 pub mod material;
 pub mod boltzmann;
 pub mod particle;
+pub mod fields;
 pub mod stats;
 pub mod probability;
 mod rng;
 
 pub use material::Material;
 pub use stats::Stats;
+pub use fields::Fields;
 pub use probability::probability;
 use particle::Particle;
 use rng::Rng;
