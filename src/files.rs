@@ -28,16 +28,6 @@ pub fn read_probabilities(fname: &str) -> (Vec<f64>, Vec<f64>) {
     (a, b)
 }
 
-pub fn write_probabilities(fname: &str, energies: &Vec<f64>, probs: &Vec<f64>) {
-    let file = File::create(fname)
-                   .ok()
-                   .expect(&format!("Can't create {} file", fname));
-    let mut writer = BufWriter::new(file);
-    let it = energies.iter().zip(probs);
-    for (energy, prob) in it {
-        write!(writer, "{} {}\n", energy, prob).unwrap();
-    }
-}
 
 pub fn clean_result(fname: &str) {
     let _ = remove_file(fname);

@@ -9,6 +9,7 @@ mod rng;
 
 pub use material::Material;
 pub use stats::Stats;
+pub use probability::probability;
 use particle::Particle;
 use rng::Rng;
 use boltzmann::BoltzmannDistrib;

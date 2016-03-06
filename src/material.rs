@@ -47,7 +47,7 @@ impl SL {
         s.maximum_energy = max;
         s
     }
-
+    #[allow(dead_code)]
     pub fn with_phonons(optical_energy: f64,
                         optical_constant: f64,
                         acoustic_constant: f64,

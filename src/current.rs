@@ -12,9 +12,9 @@ use std::env::args;
 use ini::Ini;
 use time::get_time;
 use scoped_threadpool::Pool;
-use scattering::particle::{Particle, Fields, Summary};
-use scattering::{Material, Stats, create_ensemble};
-use files::{clean_result, append_result_line, read_probabilities};
+use scattering::particle::{Fields, Summary};
+use scattering::{Stats, create_ensemble};
+use files::{clean_result, append_result_line};
 use material::SL;
 
 
@@ -47,8 +47,7 @@ fn main() {
     for f in plot.gen_fields(&fields) {
         let ensemble = create_ensemble(particles, &m, temperature, get_time().nsec as u32);
 
-        let mut ensemble_summary: Vec<Summary> =
-            vec![Summary::empty(); particles];
+        let mut ensemble_summary: Vec<Summary> = vec![Summary::empty(); particles];
         let mut pool = Pool::new(threads as u32);
 
         pool.scoped(|scope| {
