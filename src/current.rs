@@ -165,10 +165,14 @@ fn append_result_line(filename: &str, fields: &Fields, result: &Stats) {
                    .unwrap();
     let mut writer = BufWriter::new(file);
     write!(writer,
-           "{} {} {} {} {} {} {} {} {} ",
-           fields.e.0,
-           fields.e.1,
-           fields.e.2,
+           "{:10.3e} {:10.3e} {:10.3e} {:10.3e} {:10.3e} {:10.3e} {:10.3e} {:10.3e} {:10.3e} \
+            {:10.3e} {:10.3e} {:10.3e} ",
+           fields.e.0.x,
+           fields.e.0.y,
+           fields.e.1.x,
+           fields.e.1.y,
+           fields.e.2.x,
+           fields.e.2.y,
            fields.b.0,
            fields.b.1,
            fields.b.2,
@@ -177,9 +181,11 @@ fn append_result_line(filename: &str, fields: &Fields, result: &Stats) {
            fields.phi)
         .unwrap();
     write!(writer,
-           "{} {} {} {} {}\n",
-           result.current,
-           result.current_std,
+           "{:10.3e} {:10.3e} {:10.3e} {:10.3e} {:10.3e} {:10.3e} {:10.3e}\n",
+           result.current.x,
+           result.current_std.x,
+           result.current.y,
+           result.current_std.y,
            result.optical,
            result.acoustic,
            result.tau)
