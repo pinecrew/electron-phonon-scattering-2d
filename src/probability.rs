@@ -82,6 +82,6 @@ fn write_probabilities(filename: &str, energies: &Vec<f64>, probabilities: &Vec<
     let mut writer = BufWriter::new(file);
     let data = energies.iter().zip(probabilities);
     for (e, p) in data {
-        write!(writer, "{} {}\n", e, p).unwrap();
+        write!(writer, "{:10.3e} {:10.3e}\n", e, p).unwrap();
     }
 }
