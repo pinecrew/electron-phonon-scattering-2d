@@ -213,7 +213,7 @@
     <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>writer</span> <span class='op'>=</span> <span class='ident'>BufWriter</span>::<span class='ident'>new</span>(<span class='ident'>file</span>);
     <span class='kw'>let</span> <span class='ident'>data</span> <span class='op'>=</span> <span class='ident'>energies</span>.<span class='ident'>iter</span>().<span class='ident'>zip</span>(<span class='ident'>probabilities</span>);
     <span class='kw'>for</span> (<span class='ident'>e</span>, <span class='ident'>p</span>) <span class='kw'>in</span> <span class='ident'>data</span> {
-        <span class='macro'>write</span><span class='macro'>!</span>(<span class='ident'>writer</span>, <span class='string'>&quot;{} {}\n&quot;</span>, <span class='ident'>e</span>, <span class='ident'>p</span>).<span class='ident'>unwrap</span>();
+        <span class='macro'>write</span><span class='macro'>!</span>(<span class='ident'>writer</span>, <span class='string'>&quot;{:10.3e} {:10.3e}\n&quot;</span>, <span class='ident'>e</span>, <span class='ident'>p</span>).<span class='ident'>unwrap</span>();
     }
 }
 </pre>
