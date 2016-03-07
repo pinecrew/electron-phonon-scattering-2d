@@ -17,3 +17,7 @@ path = "src/probability.rs"
 [[bin]]
 name = "current"
 path = "src/current.rs"
+
+[[bin]]
+name = "zero-test"
+path = "src/zero.rs"
