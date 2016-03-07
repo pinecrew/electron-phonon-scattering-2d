@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["BrillouinZone","Representation of tetragonal brillouin zone of 2D material. a, b, c, and d are vertices of tetragon."]],"trait":[["Material",""]]});

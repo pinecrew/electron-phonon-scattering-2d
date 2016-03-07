@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["probability","Calculates $\\int_{BZ} \\delta(E(p)-E) d^2 p$"]]});
