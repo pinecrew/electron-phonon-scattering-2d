@@ -6,6 +6,7 @@ script:
     cargo test -p scattering --verbose &&
     cargo test --verbose &&
     cargo build --verbose
+after_success: sh scripts/travis-doc-upload.sh
 cache:
  directories:
   - $HOME/.cargo
