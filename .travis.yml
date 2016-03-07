@@ -5,7 +5,8 @@ script:
     cargo test -p linalg --verbose &&
     cargo test -p scattering --verbose &&
     cargo test --verbose &&
-    cargo build --verbose
+    cargo build --verbose &&
+    cargo doc
 after_success: sh scripts/travis-doc-upload.sh
 cache:
  directories:
