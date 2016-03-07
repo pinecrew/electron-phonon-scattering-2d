@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["Error","Parse error"],["Ini","Ini struct"],["SectionIterator","Iterator for sections"],["SectionMutIterator","Iterator for mutable sections"],["SectionSetter","A setter which could be used to set key-value pair in a specified section"]],"type":[["Properties","Properties type (key-value pairs)"]]});
