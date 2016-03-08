@@ -46,7 +46,8 @@ fn main() {
 
     let output = plot.output.clone();
     clean_result(&output);
-    for f in plot.gen_fields(&fields) {
+
+    for f in plot.domain(&fields) {
         let ensemble = create_ensemble(particles, &m, temperature, get_time().nsec as u32);
 
         let mut ensemble_summary = vec![Summary::empty(); particles];
@@ -72,11 +73,11 @@ fn main() {
 
 
 struct Plot {
-    pub low: f64,
-    pub high: f64,
-    pub step: f64,
-    pub var: String,
-    pub output: String,
+    low: f64,
+    high: f64,
+    step: f64,
+    var: String,
+    output: String,
     fields: Fields,
     n: usize,
     current: usize,
@@ -89,13 +90,18 @@ impl Iterator for Plot {
             self.n = ((self.high - self.low) / self.step) as usize;
         }
         let mut fields = self.fields.clone();
+        let value = self.low + self.step * self.current as f64;
         match self.var.as_ref() {
-            "E0.x" => fields.e.0.x = self.low + self.step * self.current as f64,
-            "E0.y" => fields.e.0.y = self.low + self.step * self.current as f64,
-            "E1.x" => fields.e.1.x = self.low + self.step * self.current as f64,
-            "E1.y" => fields.e.1.y = self.low + self.step * self.current as f64,
-            "E2.x" => fields.e.2.x = self.low + self.step * self.current as f64,
-            "E2.y" => fields.e.2.y = self.low + self.step * self.current as f64,
+            "E0.x" => fields.e.0.x = value,
+            "E0.y" => fields.e.0.y = value,
+            "E1.x" => fields.e.1.x = value,
+            "E1.y" => fields.e.1.y = value,
+            "E2.x" => fields.e.2.x = value,
+            "E2.y" => fields.e.2.y = value,
+            "B0" => fields.b.0 = value,
+            "B1" => fields.b.1 = value,
+            "B2" => fields.b.2 = value,
+            "phi" => fields.phi = value,
             _ => {
                 println!("something went wrong");
                 return None;
@@ -112,7 +118,7 @@ impl Iterator for Plot {
 
 
 impl Plot {
-    pub fn gen_fields(mut self, f: &Fields) -> Self {
+    pub fn domain(mut self, f: &Fields) -> Self {
         self.fields = f.clone();
         self
     }
