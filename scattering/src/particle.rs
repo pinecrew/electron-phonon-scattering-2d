@@ -154,10 +154,11 @@ impl<'a, T: 'a + Material> Particle<'a, T> {
                     n_ac += 1; // наращиваем счетчик рассеяний на акустических фононах
                 }
                 let mut count = 15;
+                let theta = p.y.atan2(p.x);
                 while count > 0 {
-                    let theta = 2.0 * PI * rng.uniform(); // случайным образом
+                    let dtheta = 2.0 * PI * rng.uniform(); // случайным образом
                     // разыгрываем направление квазиимпульса
-                    let ps = self.m.momentums(e, theta);
+                    let ps = self.m.momentums(e, theta + dtheta);
                     if ps.len() > 0 {
                         p = ps[0];
                         break;
