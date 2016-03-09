@@ -15,7 +15,7 @@ macro_rules! get_section {
     ($c:ident, $s:expr) => (
         match $c.section(Some($s.to_owned())) {
             Some(value) => value,
-            None => panic!("Section {} not found!", $s)
+            None => panic!("Section `[{}]` not found!", $s)
         }
     )
 }
