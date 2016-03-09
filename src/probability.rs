@@ -16,6 +16,7 @@ extern crate ini;
 extern crate scoped_threadpool;
 extern crate scattering;
 extern crate linalg; // need for material
+extern crate time;
 
 mod material;
 
@@ -61,6 +62,7 @@ fn main() {
 
     let mut pool = Pool::new(threads as u32);
 
+    let all_time_start = time::SteadyTime::now();
     pool.scoped(|scope| {
         for (index, item) in probabilities.iter_mut().enumerate() {
             let ref material = material;
@@ -71,6 +73,8 @@ fn main() {
             });
         }
     });
+    let all_time_stop = time::SteadyTime::now();
+    println!(">> total time: {}", all_time_stop - all_time_start);
 
     write_probabilities(&output, &energies, &probabilities);
 }
