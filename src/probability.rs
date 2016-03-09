@@ -34,7 +34,6 @@ macro_rules! get_element {
     // $i -- parameter
     // $v -- default value
     ($c:ident, $i:expr, $v:expr) => (
-        // ------------------vvvvvvvvvvvvvvvvv badcode
         $c.get($i).unwrap_or(&($v.to_string())).parse().unwrap();
     )
 }
@@ -49,10 +48,10 @@ fn main() {
     let conf = Ini::load_from_file(&file_name).unwrap();
     let section = conf.section(Some("probability".to_owned())).unwrap();
 
-    let energy_samples: usize = get_element!(section, "energy_samples", 20);
-    let error: f64 = get_element!(section, "probability_error", 1e-5);
+    let energy_samples: usize = get_element!(section, "energy_samples", "20");
+    let error: f64 = get_element!(section, "probability_error", "1e-5");
     let output: String = get_element!(section, "output", "data/prob.dat");
-    let threads: usize = get_element!(section, "threads", 1);
+    let threads: usize = get_element!(section, "threads", "1");
 
     let material = SL::without_phonons();
     let mut energies: Vec<f64> = Vec::with_capacity(energy_samples);
