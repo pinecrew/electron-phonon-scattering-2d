@@ -24,6 +24,15 @@ cd deploy_docs
 git config user.name "doc upload bot"
 git config user.email "nobody@example.com"
 rm -rf *
+
+docs=$(find ../target/doc/ -name "*.html")
+for file in $docs; do
+    echo $file
+    sed -i 's_\(</head>\)_<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.5.1/katex.min.css">\n<script src="//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.5.1/katex.min.js"></script>\n<script src="//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.5.1/contrib/auto-render.min.js"></script>\n\1_' $file
+    sed -i 's_\(</body>\)_<script>renderMathInElement(document.getElementById("math"),{delimiters: [{left: "$$", right: "$$", display: true},{left: "$", right: "$", display: false}]});</script>_' $file
+    sed -i 's_<body_<body id=math_' $file
+done
+
 mv ../target/doc/* .
 git add -A .
 git commit -qm "doc upload"

@@ -2,7 +2,7 @@
 use material::Material;
 use linalg::Point;
 
-/// Calculates $\int_{BZ} \delta(E(p)-E) d^2 p$
+/// Calculates $\int\limits\_{BZ} \delta(E(p)-E) d\^{2} p$
 pub fn probability<T: Material>(energy: f64, m: &T, error: f64) -> f64 {
     use std::f64::consts::PI;
     use std::cmp::min;
