@@ -62,6 +62,9 @@ fn main() {
 
     let mut pool = Pool::new(threads as u32);
 
+    println!("calculate probabilities for `{}`", file_name);
+    println!("you can find results in `{}`", output);
+
     let all_time_start = time::SteadyTime::now();
     pool.scoped(|scope| {
         for (index, item) in probabilities.iter_mut().enumerate() {
@@ -74,7 +77,8 @@ fn main() {
         }
     });
     let all_time_stop = time::SteadyTime::now();
-    println!(">> total time: {}", all_time_stop - all_time_start);
+    println!(">> total time: {}",
+             (all_time_stop - all_time_start).num_seconds());
 
     write_probabilities(&output, &energies, &probabilities);
 }
