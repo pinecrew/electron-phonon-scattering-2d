@@ -11,7 +11,7 @@ use std::fs::{OpenOptions, remove_file};
 use std::io::{BufWriter, Write};
 
 use ini::Ini;
-// use time::{get_time, Duratiom, SteadyTime};
+use time::{get_time, SteadyTime};
 use scoped_threadpool::Pool;
 use scattering::particle::Summary;
 use scattering::{Fields, Stats, create_ensemble};
@@ -46,13 +46,16 @@ fn main() {
 
     let output = plot.output.clone();
     clean_result(&output);
-    
+
+    println!("start calculations for `{}`", file_name);
+    println!("you can find results in `{}`", output);
+
     let plot_count = ((plot.high - plot.low) / plot.step) as u32;
-    let all_time_start = time::SteadyTime::now();
+    let all_time_start = SteadyTime::now();
 
     for (index, f) in plot.gen_fields(&fields).enumerate() {
-        let part_time_start = time::SteadyTime::now();
-        let ensemble = create_ensemble(particles, &m, temperature, time::get_time().nsec as u32);
+        let part_time_start = SteadyTime::now();
+        let ensemble = create_ensemble(particles, &m, temperature, get_time().nsec as u32);
 
         let mut ensemble_summary = vec![Summary::empty(); particles];
         let mut pool = Pool::new(threads as u32);
@@ -72,12 +75,15 @@ fn main() {
         let result = Stats::from_ensemble(&ensemble_summary);
         append_result_line(&output, &f, &result);
 
-        let part_time_stop = time::SteadyTime::now();
-        println!(">> step {index} of {count}: {time}", index=index+1, count=plot_count,
-                                                       time=part_time_stop-part_time_start);
+        let part_time_stop = SteadyTime::now();
+        println!(">> point {index} of {count}: done in {time} s",
+                 index = index + 1,
+                 count = plot_count,
+                 time = (part_time_stop - part_time_start).num_seconds());
     }
-    let all_time_stop = time::SteadyTime::now();
-    println!(">> total time: {}", all_time_stop - all_time_start);
+    let all_time_stop = SteadyTime::now();
+    println!(">> total time: {} s",
+             (all_time_stop - all_time_start).num_seconds());
 }
 
 
