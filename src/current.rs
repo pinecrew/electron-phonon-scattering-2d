@@ -5,6 +5,8 @@ extern crate scattering;
 extern crate linalg;
 
 mod material;
+#[macro_use]
+mod macros;
 
 use std::env::args;
 use std::fs::{OpenOptions, remove_file};
@@ -17,15 +19,6 @@ use scattering::particle::Summary;
 use scattering::{Fields, Stats, create_ensemble};
 use material::SL;
 
-macro_rules! get_element {
-    // $c -- section
-    // $i -- parameter
-    // $v -- default value
-    ($c:ident, $i:expr, $v:expr) => (
-        $c.get($i).unwrap_or(&($v.to_string())).parse().unwrap();
-    )
-}
-
 fn main() {
     let file_name = match args().nth(1) {
         Some(file) => file,
@@ -35,14 +28,14 @@ fn main() {
     let plot = plot_from_config(&conf);
     let fields = fields_from_config(&conf);
 
-    let mut section = conf.section(Some("phonons".to_owned())).unwrap();
+    let mut section = get_section!(conf, "phonons");
     let optical_energy: f64 = get_element!(section, "optical_energy", "5e-2");
     let optical_constant: f64 = get_element!(section, "optical_constant", "1.5e-3");
     let acoustic_constant: f64 = get_element!(section, "acoustic_constant", "1.5e-3");
     let input: String = get_element!(section, "input", "data/prob.dat");
     let m = SL::with_phonons(optical_energy, optical_constant, acoustic_constant, &input);
 
-    section = conf.section(Some("modelling".to_owned())).unwrap();
+    section = get_section!(conf, "modelling");
     let dt: f64 = get_element!(section, "dt", "1e-1");
     let all_time: f64 = get_element!(section, "all_time", "1e3");
     let temperature: f64 = get_element!(section, "temperature", "7e-3");
@@ -146,7 +139,7 @@ impl Plot {
 }
 
 fn plot_from_config(conf: &Ini) -> Plot {
-    let section = conf.section(Some("plot".to_owned())).unwrap();
+    let section = get_section!(conf, "plot");
     let low: f64 = get_element!(section, "low", "0.0");
     let high: f64 = get_element!(section, "high", "0.0");
     let step: f64 = get_element!(section, "step", "1.0");
@@ -165,7 +158,7 @@ fn plot_from_config(conf: &Ini) -> Plot {
 }
 
 fn fields_from_config(conf: &Ini) -> Fields {
-    let section = conf.section(Some("fields".to_owned())).unwrap();
+    let section = get_section!(conf, "fields");
     let mut f = Fields::zero();
     f.e.0 = get_element!(section, "E0", "0 0");
     f.e.1 = get_element!(section, "E1", "0 0");
