@@ -19,6 +19,8 @@ extern crate linalg; // need for material
 extern crate time;
 
 mod material;
+#[macro_use]
+mod macros;
 
 use std::env::args;
 use std::fs::File;
@@ -29,11 +31,6 @@ use scoped_threadpool::Pool;
 use scattering::{Material, probability};
 use material::SL;
 
-macro_rules! get_element {
-    ($c:ident, $i:expr) => ($c.get($i).unwrap().parse().unwrap();)
-}
-
-
 fn main() {
     let file_name = match args().nth(1) {
         Some(file) => file,
@@ -41,13 +38,12 @@ fn main() {
     };
 
     let conf = Ini::load_from_file(&file_name).unwrap();
-    let section = conf.section(Some("probability".to_owned())).unwrap();
+    let section = get_section!(conf, "probability");
 
-    let energy_samples: usize = get_element!(section, "energy_samples");
-    let error: f64 = get_element!(section, "probability_error");
-    let output: String = get_element!(section, "output");
-    let threads: usize = get_element!(section, "threads");
-
+    let energy_samples: usize = get_element!(section, "energy_samples", "20");
+    let error: f64 = get_element!(section, "probability_error", "1e-5");
+    let output: String = get_element!(section, "output", "data/prob.dat");
+    let threads: usize = get_element!(section, "threads", "1");
 
     let material = SL::without_phonons();
     let mut energies: Vec<f64> = Vec::with_capacity(energy_samples);

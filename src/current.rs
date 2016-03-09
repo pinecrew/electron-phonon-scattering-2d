@@ -5,6 +5,8 @@ extern crate scattering;
 extern crate linalg;
 
 mod material;
+#[macro_use]
+mod macros;
 
 use std::env::args;
 use std::fs::{OpenOptions, remove_file};
@@ -17,10 +19,6 @@ use scattering::particle::Summary;
 use scattering::{Fields, Stats, create_ensemble};
 use material::SL;
 
-macro_rules! get_element {
-    ($c:ident, $i:expr) => ($c.get($i).unwrap().parse().unwrap();)
-}
-
 fn main() {
     let file_name = match args().nth(1) {
         Some(file) => file,
@@ -30,19 +28,19 @@ fn main() {
     let plot = plot_from_config(&conf);
     let fields = fields_from_config(&conf);
 
-    let mut section = conf.section(Some("phonons".to_owned())).unwrap();
-    let optical_energy: f64 = get_element!(section, "optical_energy");
-    let optical_constant: f64 = get_element!(section, "optical_constant");
-    let acoustic_constant: f64 = get_element!(section, "acoustic_constant");
-    let input: String = get_element!(section, "input");
+    let mut section = get_section!(conf, "phonons");
+    let optical_energy: f64 = get_element!(section, "optical_energy", "5e-2");
+    let optical_constant: f64 = get_element!(section, "optical_constant", "1.5e-3");
+    let acoustic_constant: f64 = get_element!(section, "acoustic_constant", "1.5e-3");
+    let input: String = get_element!(section, "input", "data/prob.dat");
     let m = SL::with_phonons(optical_energy, optical_constant, acoustic_constant, &input);
 
-    section = conf.section(Some("modelling".to_owned())).unwrap();
-    let dt: f64 = get_element!(section, "dt");
-    let all_time: f64 = get_element!(section, "all_time");
-    let temperature: f64 = get_element!(section, "temperature");
-    let particles: usize = get_element!(section, "particles");
-    let threads: usize = get_element!(section, "threads");
+    section = get_section!(conf, "modelling");
+    let dt: f64 = get_element!(section, "dt", "1e-1");
+    let all_time: f64 = get_element!(section, "all_time", "1e3");
+    let temperature: f64 = get_element!(section, "temperature", "7e-3");
+    let particles: usize = get_element!(section, "particles", "100");
+    let threads: usize = get_element!(section, "threads", "1");
 
     let output = plot.output.clone();
     clean_result(&output);
@@ -141,12 +139,12 @@ impl Plot {
 }
 
 fn plot_from_config(conf: &Ini) -> Plot {
-    let section = conf.section(Some("plot".to_owned())).unwrap();
-    let low: f64 = get_element!(section, "low");
-    let high: f64 = get_element!(section, "high");
-    let step: f64 = get_element!(section, "step");
-    let var: String = get_element!(section, "var");
-    let output: String = get_element!(section, "output");
+    let section = get_section!(conf, "plot");
+    let low: f64 = get_element!(section, "low", "0.0");
+    let high: f64 = get_element!(section, "high", "0.0");
+    let step: f64 = get_element!(section, "step", "1.0");
+    let var: String = get_element!(section, "var", "E0.y");
+    let output: String = get_element!(section, "output", "data/result.dat");
     Plot {
         low: low,
         high: high,
@@ -160,17 +158,17 @@ fn plot_from_config(conf: &Ini) -> Plot {
 }
 
 fn fields_from_config(conf: &Ini) -> Fields {
-    let section = conf.section(Some("fields".to_owned())).unwrap();
+    let section = get_section!(conf, "fields");
     let mut f = Fields::zero();
-    f.e.0 = get_element!(section, "E0");
-    f.e.1 = get_element!(section, "E1");
-    f.e.2 = get_element!(section, "E2");
-    f.b.0 = get_element!(section, "B0");
-    f.b.1 = get_element!(section, "B1");
-    f.b.2 = get_element!(section, "B2");
-    f.omega.1 = get_element!(section, "omega1");
-    f.omega.2 = get_element!(section, "omega2");
-    f.phi = get_element!(section, "phi");
+    f.e.0 = get_element!(section, "E0", "0 0");
+    f.e.1 = get_element!(section, "E1", "0 0");
+    f.e.2 = get_element!(section, "E2", "0 0");
+    f.b.0 = get_element!(section, "B0", "0");
+    f.b.1 = get_element!(section, "B1", "0");
+    f.b.2 = get_element!(section, "B2", "0");
+    f.omega.1 = get_element!(section, "omega1", "0");
+    f.omega.2 = get_element!(section, "omega2", "0");
+    f.phi = get_element!(section, "phi", 0.0);
     f
 }
 
