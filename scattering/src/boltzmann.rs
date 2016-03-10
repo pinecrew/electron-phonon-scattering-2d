@@ -37,6 +37,32 @@ fn test_binsearch() {
     assert_eq!(binary_search(&v3, 0.5) + 1,
                (200.0 * (0.5 as f64).asin()).floor() as usize);
 }
+/// Boltzmann distribution in polar coordinates:
+/// $$ f(p, \theta) = \exp\left[-\frac{\varepsilon(\vec{p}){T}\right]\cdot p $$
+fn f<T: Material>(p: f64, theta: f64, temperature: f64, m: &T) -> f64 {
+    (-m.energy_polar(p, theta) / temperature).exp() * p
+}
+/// Calculates anngle distribution:
+/// $$ g(\theta) = A\int\limits\_0^{p_{max}(\theta)}\exp\left[-\frac{\varepsilon(\vec{p}){T}\right]\cdot pdp $$
+fn calc_angle_distrib<T: Material>(temperature: f64, m: &T) -> Vec<f64> {
+    let n = 1000;
+    let mut angle_distrib: Vec<f64> = vec![0.0; n];
+    let angle_step = 2.0 * PI / n as f64;
+    for i in 0..n - 1 {
+        let theta = angle_step * i as f64;
+        let pm = m.brillouin_zone().pmax(theta);
+        let step = pm / (n - 1) as f64;
+        angle_distrib[i + 1] = angle_distrib[i];
+        for j in 0..n {
+            let p = step * j as f64;
+            angle_distrib[i + 1] += f(p, theta, temperature, m) * step * angle_step;
+        }
+    }
+    for i in 0..n {
+        angle_distrib[i] /= angle_distrib[n - 1];
+    }
+    angle_distrib
+}
 
 
 pub struct BoltzmannDistrib<'a, T: 'a + Material> {
@@ -46,27 +72,11 @@ pub struct BoltzmannDistrib<'a, T: 'a + Material> {
 }
 
 impl<'a, T: 'a + Material> BoltzmannDistrib<'a, T> {
+    /// Create new BoltzmannDistrib object for given material and temperature
     pub fn new(temperature: f64, m: &T) -> BoltzmannDistrib<T> {
-        let n = 1000;
-        let mut angle_distrib: Vec<f64> = vec![0.0; n];
-        let angle_step = 2.0 * PI / n as f64;
-        for i in 0..n - 1 {
-            let theta = angle_step * i as f64;
-            let pm = m.brillouin_zone().pmax(theta);
-            let step = pm / (n - 1) as f64;
-            angle_distrib[i + 1] = angle_distrib[i];
-            for j in 0..n {
-                let p = step * j as f64;
-                angle_distrib[i + 1] += (-m.energy_polar(p, theta) / temperature).exp() * p *
-                                        step * angle_step;
-            }
-        }
-        for i in 0..n {
-            angle_distrib[i] /= angle_distrib[n - 1];
-        }
         BoltzmannDistrib {
             temperature: temperature,
-            angle_distrib: angle_distrib,
+            angle_distrib: calc_angle_distrib(temperature, m),
             material: m,
         }
     }
@@ -88,9 +98,7 @@ impl<'a, T: 'a + Material> BoltzmannDistrib<'a, T> {
         let step = pm / (n - 1) as f64;
         for i in 0..n - 1 {
             let p = step * i as f64;
-            dist[i + 1] = dist[i] +
-                          (-self.material.energy_polar(p, theta) / self.temperature).exp() * p *
-                          step;
+            dist[i + 1] = dist[i] + f(p, theta, self.temperature, self.material) * step;
         }
         for i in 0..n {
             dist[i] /= dist[n - 1];
@@ -128,10 +136,10 @@ fn test_boltzmann() {
             let q = p.position();
             q.dot(q) / 20.0
         }
-        fn energy_gradient(&self, p: &Point) -> Vec2 {
+        fn energy_gradient(&self, _: &Point) -> Vec2 {
             unimplemented!();
         }
-        fn velocity(&self, p: &Point) -> Vec2 {
+        fn velocity(&self, _: &Point) -> Vec2 {
             unimplemented!();
         }
         fn min_energy(&self) -> f64 {
@@ -140,7 +148,7 @@ fn test_boltzmann() {
         fn max_energy(&self) -> f64 {
             0.1
         }
-        fn momentums(&self, energy: f64, theta: f64) -> Vec<Point> {
+        fn momentums(&self, _: f64, _: f64) -> Vec<Point> {
             unimplemented!();
         }
         fn brillouin_zone(&self) -> &BrillouinZone {
@@ -149,10 +157,10 @@ fn test_boltzmann() {
         fn optical_energy(&self) -> f64 {
             unimplemented!();
         }
-        fn optical_scattering(&self, p: &Point) -> f64 {
+        fn optical_scattering(&self, _: &Point) -> f64 {
             unimplemented!();
         }
-        fn acoustic_scattering(&self, p: &Point) -> f64 {
+        fn acoustic_scattering(&self, _: &Point) -> f64 {
             unimplemented!();
         }
     }
