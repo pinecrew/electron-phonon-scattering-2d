@@ -70,7 +70,9 @@ fn main() {
             }
         });
 
-        let result = Stats::from_ensemble(&ensemble_summary);
+        let mut result = Stats::from_ensemble(&ensemble_summary);
+        // dirty: electrons have negative charge
+        result.current = -result.current;
         append_result_line(&output, &f, &result);
 
         let part_time_stop = SteadyTime::now();

@@ -118,11 +118,11 @@ impl<'a, T: 'a + Material> Particle<'a, T> {
         let mut int_v_dt = Vec2::zero();
 
         let force = |p: &Point, t: f64| -> Vec2 {
-            f.e.0 + f.e.1 * (f.omega.1 * t).cos() + f.e.2 * (f.omega.2 * t + f.phi).cos() +
+            (f.e.0 + f.e.1 * (f.omega.1 * t).cos() + f.e.2 * (f.omega.2 * t + f.phi).cos() +
             self.m
                 .velocity(p)
                 .cross(f.b.0 + f.b.1 * (f.omega.1 * t).cos() +
-                       f.b.2 * (f.omega.2 * t + f.phi).cos())
+                       f.b.2 * (f.omega.2 * t + f.phi).cos())) * (-1.0)
         };
 
         let mut r = -rng.uniform().ln();
