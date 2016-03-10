@@ -30,9 +30,9 @@ pub struct SL {
 
 impl SL {
     pub fn without_phonons() -> SL {
-        let a = Point::new(-30.0, -PI);
-        let b = Point::new(30.0, -PI);
-        let d = Point::new(-30.0, PI);
+        let a = Point::new(-PI, -30.0);
+        let b = Point::new( PI, -30.0);
+        let d = Point::new(-PI,  30.0);
         let brillouin_zone = BrillouinZone::new(a, b, d);
         let mut s = SL {
             minimum_energy: 0.0,
@@ -104,17 +104,17 @@ impl SL {
 impl Material for SL {
     // Выражение для энергетического спектра (в декартовых координатах)
     fn energy(&self, p: &Point) -> f64 {
-        let root = (1.0 + A * A * p.x * p.x).sqrt();
-        EPS0 * (root + G * (1.0 - p.y.cos()) / root)
+        let root = (1.0 + A * A * p.y * p.y).sqrt();
+        EPS0 * (root + G * (1.0 - p.x.cos()) / root)
     }
 
 
     // Градиент энергии в импульсном пространстве
     fn energy_gradient(&self, p: &Point) -> Vec2 {
-        let b = 1.0 + A * A * p.x * p.x;
+        let b = 1.0 + A * A * p.y * p.y;
         let root = b.sqrt();
-        Vec2::new(EPS0 * A * A * p.x / root * (1.0 - G * (1.0 - p.y.cos()) / b),
-                  G * EPS0 / root * p.y.sin())
+        Vec2::new(G * EPS0 / root * p.x.sin(),
+        EPS0 * A * A * p.y / root * (1.0 - G * (1.0 - p.x.cos()) / b))
     }
 
     // Скорость
