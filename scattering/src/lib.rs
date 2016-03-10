@@ -115,9 +115,8 @@ fn zero_field_test() {
     let mut average = Vec2::zero();
     let mut average_std = Vec2::zero();
     let mut rng = Rng::new(1_234_567_890_u32);
-    let step = u32::max_value() / n;
 
-    for i in 0..n {
+    for _ in 0..n {
         let ensemble = create_ensemble(particles, m, temperature, rng.rand());
         let mut ensemble_summary = vec![Summary::empty(); particles];
 
