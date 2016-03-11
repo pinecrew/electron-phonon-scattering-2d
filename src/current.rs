@@ -9,8 +9,9 @@ mod material;
 mod macros;
 
 use std::env::args;
-use std::fs::{OpenOptions, remove_file};
+use std::fs::{OpenOptions, remove_file, create_dir};
 use std::io::{BufWriter, Write};
+use std::path::Path;
 
 use ini::Ini;
 use time::{get_time, SteadyTime};
@@ -42,11 +43,12 @@ fn main() {
     let particles: usize = get_element!(section, "particles", "100");
     let threads: usize = get_element!(section, "threads", "1");
 
-    let output = plot.output.clone();
+    let output_clone = plot.output.clone();
+    let output = Path::new(&output_clone);
     clean_result(&output);
 
     println!("start calculations for `{}`", file_name);
-    println!("you can find results in `{}`", output);
+    println!("you can find results in `{}`", output.display());
 
     let plot_count = ((plot.high - plot.low) / plot.step) as u32;
     let all_time_start = SteadyTime::now();
@@ -174,11 +176,17 @@ fn fields_from_config(conf: &Ini) -> Fields {
     f
 }
 
-fn clean_result(filename: &str) {
+fn clean_result(filename: &Path) {
     let _ = remove_file(filename);
 }
 
-fn append_result_line(filename: &str, fields: &Fields, result: &Stats) {
+fn append_result_line(filename: &Path, fields: &Fields, result: &Stats) {
+    let parent = filename.parent()
+                         .expect(&format!("Can't get parent directory for `{}`", filename.display()));
+    if parent.exists() == false {
+        create_dir(parent).ok()
+                          .expect(&format!("Can't create `{}` directory!", parent.display()));
+    }
     let file = OpenOptions::new()
                    .create(true)
                    .write(true)
