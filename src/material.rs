@@ -31,8 +31,8 @@ pub struct SL {
 impl SL {
     pub fn without_phonons() -> SL {
         let a = Point::new(-PI, -30.0);
-        let b = Point::new( PI, -30.0);
-        let d = Point::new(-PI,  30.0);
+        let b = Point::new(PI, -30.0);
+        let d = Point::new(-PI, 30.0);
         let brillouin_zone = BrillouinZone::new(a, b, d);
         let mut s = SL {
             minimum_energy: 0.0,
@@ -89,14 +89,15 @@ impl SL {
 
     fn probability(&self, energy: f64) -> f64 {
         let step = self.energies[1] - self.energies[0];
+        let pos = (energy - self.energies[0]) / step;
+        let floor = pos.floor();
 
-        if energy < self.energies[0] || energy > self.energies[self.energies.len() - 1] {
+        if floor < 0.0 || floor > self.energies.len() as f64 - 2.0 {
             return 0.0;
         }
 
-        let pos = (energy - self.energies[0]) / step;
-        let i = pos.floor() as usize;
-        let w = pos - pos.floor();
+        let i = floor as usize;
+        let w = pos - floor;
         self.probabilities[i] * (1.0 - w) + self.probabilities[i + 1] * w
     }
 }
@@ -104,17 +105,24 @@ impl SL {
 impl Material for SL {
     // Выражение для энергетического спектра (в декартовых координатах)
     fn energy(&self, p: &Point) -> f64 {
+        let py_max = self.brillouin_zone().d.y;
+        let scale = PI / 2.0 / (1.0 + A * A * py_max * py_max).sqrt();
         let root = (1.0 + A * A * p.y * p.y).sqrt();
-        EPS0 * (root + G * (1.0 - p.x.cos()) / root)
+        let sroot = (root * scale).sin() / scale;
+        EPS0 * (sroot + G * (1.0 - p.x.cos()) / sroot)
     }
 
 
     // Градиент энергии в импульсном пространстве
     fn energy_gradient(&self, p: &Point) -> Vec2 {
+        let py_max = self.brillouin_zone().d.y;
+        let scale = PI / 2.0 / (1.0 + A * A * py_max * py_max).sqrt();
         let b = 1.0 + A * A * p.y * p.y;
         let root = b.sqrt();
-        Vec2::new(G * EPS0 / root * p.x.sin(),
-        EPS0 * A * A * p.y / root * (1.0 - G * (1.0 - p.x.cos()) / b))
+        let sroot = (root * scale).sin() / scale;
+        let croot = (root * scale).cos();
+        Vec2::new(G * EPS0 / sroot * p.x.sin(),
+                  EPS0 * A * A * p.y / root * croot * (1.0 - G * (1.0 - p.x.cos()) / sroot.powi(2)))
     }
 
     // Скорость
