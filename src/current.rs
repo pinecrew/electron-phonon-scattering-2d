@@ -17,7 +17,7 @@ use time::{get_time, SteadyTime};
 use scoped_threadpool::Pool;
 use scattering::particle::Summary;
 use scattering::{Fields, Stats, create_ensemble};
-use material::SL;
+use material::SL2;
 
 fn main() {
     let file_name = match args().nth(1) {
@@ -33,7 +33,7 @@ fn main() {
     let optical_constant: f64 = get_element!(section, "optical_constant", "1.5e-3");
     let acoustic_constant: f64 = get_element!(section, "acoustic_constant", "1.5e-3");
     let input: String = get_element!(section, "input", "data/prob.dat");
-    let m = SL::with_phonons(optical_energy, optical_constant, acoustic_constant, &input);
+    let m = SL2::with_phonons(optical_energy, optical_constant, acoustic_constant, &input);
 
     section = get_section!(conf, "modelling");
     let dt: f64 = get_element!(section, "dt", "1e-1");
