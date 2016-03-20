@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Vova Abdrakhmanov <369565@gmail.com>", "Alexey Golubev <dr.freecx@gmail.com>"]
 
 [dependencies]
-rust-ini = "0.9"
+tini = "0.1"
 scoped_threadpool = "0.1.*"
 time = "0.1"
 scattering = { path = "scattering" }
