@@ -7,8 +7,9 @@ extern crate linalg;
 mod material;
 
 use std::env::args;
-use std::fs::{OpenOptions, remove_file};
+use std::fs::{OpenOptions, remove_file, create_dir};
 use std::io::{BufWriter, Write};
+use std::path::Path;
 
 use tini::Ini;
 use time::get_time;
@@ -22,9 +23,17 @@ fn main() {
         Some(file) => file,
         None => "config.ini".to_owned(),
     };
-    let conf = Ini::from_file(&file_name).unwrap();
-    let output = "data/zero-test-new.dat";
 
+    let output = Path::new("data/zero-test-new.dat");
+    let parent = output.parent()
+                       .expect(&format!("Can't get parent directory for `{}`", output.display()));
+    if parent.exists() == false {
+        create_dir(parent)
+            .ok()
+            .expect(&format!("Can't create `{}` directory!", parent.display()));
+    }
+
+    let conf = Ini::from_file(&file_name).unwrap();
     let optical_energy: f64 = conf.get("phonons", "optical_energy").unwrap();
     let optical_constant: f64 = conf.get("phonons", "optical_constant").unwrap();
     let acoustic_constant: f64 = conf.get("phonons", "acoustic_constant").unwrap();
@@ -38,7 +47,7 @@ fn main() {
     let threads: usize = conf.get("modelling", "threads").unwrap();
 
     let f = Fields::zero();
-    clean_result(&output);
+    clean_result(output);
     for _ in 0..100 {
         let ensemble = create_ensemble(particles, &m, temperature, get_time().nsec as u32);
 
@@ -63,11 +72,11 @@ fn main() {
 }
 
 
-fn clean_result(filename: &str) {
+fn clean_result(filename: &Path) {
     let _ = remove_file(filename);
 }
 
-fn append_result_line(filename: &str, result: &Stats) {
+fn append_result_line(filename: &Path, result: &Stats) {
     let file = OpenOptions::new()
                    .create(true)
                    .write(true)

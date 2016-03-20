@@ -21,8 +21,9 @@ extern crate time;
 mod material;
 
 use std::env::args;
-use std::fs::File;
+use std::fs::{File, create_dir};
 use std::io::{BufWriter, Write};
+use std::path::Path;
 
 use tini::Ini;
 use scoped_threadpool::Pool;
@@ -40,6 +41,7 @@ fn main() {
     let energy_samples: usize = conf.get("probability", "energy_samples").unwrap_or(20);
     let error: f64 = conf.get("probability", "probability_error").unwrap_or(1e-5);
     let output: String = conf.get("probability", "output").unwrap_or("data/prob.dat".to_owned());
+    let output = Path::new(&output);
     let threads: usize = conf.get("probability", "threads").unwrap_or(1);
 
     let material = SL::without_phonons();
@@ -56,7 +58,7 @@ fn main() {
     let mut pool = Pool::new(threads as u32);
 
     println!("calculate probabilities for `{}`", file_name);
-    println!("you can find results in `{}`", output);
+    println!("you can find results in `{}`", output.display());
 
     let all_time_start = time::SteadyTime::now();
     pool.scoped(|scope| {
@@ -76,10 +78,18 @@ fn main() {
     write_probabilities(&output, &energies, &probabilities);
 }
 
-fn write_probabilities(filename: &str, energies: &Vec<f64>, probabilities: &Vec<f64>) {
+fn write_probabilities(filename: &Path, energies: &Vec<f64>, probabilities: &Vec<f64>) {
+    let parent = filename.parent()
+                         .expect(&format!("Can't get parent directory for `{}`",
+                                          filename.display()));
+    if parent.exists() == false {
+        create_dir(parent)
+            .ok()
+            .expect(&format!("Can't create `{}` directory!", parent.display()));
+    }
     let file = File::create(filename)
                    .ok()
-                   .expect(&format!("Can't create `{}`", filename));
+                   .expect(&format!("Can't create `{}`", filename.display()));
     let mut writer = BufWriter::new(file);
     let data = energies.iter().zip(probabilities);
     for (e, p) in data {
