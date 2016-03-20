@@ -1,1 +1,1 @@
-initSidebarItems({"macro":[["get_element!",""]]});
+initSidebarItems({});
