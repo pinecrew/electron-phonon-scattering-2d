@@ -17,10 +17,6 @@ use scattering::particle::Summary;
 use scattering::{Fields, Stats, create_ensemble};
 use material::SL;
 
-macro_rules! get_element {
-    ($c:ident, $i:expr) => ($c.get($i).unwrap().parse().unwrap();)
-}
-
 fn main() {
     let file_name = match args().nth(1) {
         Some(file) => file,

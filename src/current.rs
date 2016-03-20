@@ -5,8 +5,6 @@ extern crate scattering;
 extern crate linalg;
 
 mod material;
-#[macro_use]
-mod macros;
 
 use std::env::args;
 use std::fs::{OpenOptions, remove_file};

@@ -19,8 +19,6 @@ extern crate linalg; // need for material
 extern crate time;
 
 mod material;
-#[macro_use]
-mod macros;
 
 use std::env::args;
 use std::fs::File;
