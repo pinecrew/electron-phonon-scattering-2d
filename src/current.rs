@@ -1,4 +1,4 @@
-extern crate ini;
+extern crate tini;
 extern crate time;
 extern crate scoped_threadpool;
 extern crate scattering;
@@ -12,7 +12,7 @@ use std::env::args;
 use std::fs::{OpenOptions, remove_file};
 use std::io::{BufWriter, Write};
 
-use ini::Ini;
+use tini::Ini;
 use time::{get_time, SteadyTime};
 use scoped_threadpool::Pool;
 use scattering::particle::Summary;
@@ -24,23 +24,21 @@ fn main() {
         Some(file) => file,
         None => "config.ini".to_owned(),
     };
-    let conf = Ini::load_from_file(&file_name).unwrap();
+    let conf = Ini::from_file(&file_name).unwrap();
     let plot = plot_from_config(&conf);
     let fields = fields_from_config(&conf);
 
-    let mut section = get_section!(conf, "phonons");
-    let optical_energy: f64 = get_element!(section, "optical_energy", "5e-2");
-    let optical_constant: f64 = get_element!(section, "optical_constant", "1.5e-3");
-    let acoustic_constant: f64 = get_element!(section, "acoustic_constant", "1.5e-3");
-    let input: String = get_element!(section, "input", "data/prob.dat");
+    let optical_energy: f64 = conf.get("phonons", "optical_energy").unwrap_or(5e-2);
+    let optical_constant: f64 = conf.get("phonons", "optical_constant").unwrap_or(1.5e-3);
+    let acoustic_constant: f64 = conf.get("phonons", "acoustic_constant").unwrap_or(1.5e-3);
+    let input: String = conf.get("phonons", "input").unwrap_or("data/prob.dat".to_owned());
     let m = SL::with_phonons(optical_energy, optical_constant, acoustic_constant, &input);
 
-    section = get_section!(conf, "modelling");
-    let dt: f64 = get_element!(section, "dt", "1e-1");
-    let all_time: f64 = get_element!(section, "all_time", "1e3");
-    let temperature: f64 = get_element!(section, "temperature", "7e-3");
-    let particles: usize = get_element!(section, "particles", "100");
-    let threads: usize = get_element!(section, "threads", "1");
+    let dt: f64 = conf.get("modelling", "dt").unwrap_or(1e-1);
+    let all_time: f64 = conf.get("modelling", "all_time").unwrap_or(1e3);
+    let temperature: f64 = conf.get("modelling", "temperature").unwrap_or(7e-3);
+    let particles: usize = conf.get("modelling", "particles").unwrap_or(100);
+    let threads: usize = conf.get("modelling", "threads").unwrap_or(1);
 
     let output = plot.output.clone();
     clean_result(&output);
@@ -141,12 +139,11 @@ impl Plot {
 }
 
 fn plot_from_config(conf: &Ini) -> Plot {
-    let section = get_section!(conf, "plot");
-    let low: f64 = get_element!(section, "low", "0.0");
-    let high: f64 = get_element!(section, "high", "0.0");
-    let step: f64 = get_element!(section, "step", "1.0");
-    let var: String = get_element!(section, "var", "E0.y");
-    let output: String = get_element!(section, "output", "data/result.dat");
+    let low: f64 = conf.get("plot", "low").unwrap_or(0.0);
+    let high: f64 = conf.get("plot", "high").unwrap_or(0.0);
+    let step: f64 = conf.get("plot", "step").unwrap_or(1.0);
+    let var: String = conf.get("plot", "var").unwrap_or("E0.y".to_owned());
+    let output: String = conf.get("plot", "output").unwrap_or("data/result.dat".to_owned());
     Plot {
         low: low,
         high: high,
@@ -160,17 +157,16 @@ fn plot_from_config(conf: &Ini) -> Plot {
 }
 
 fn fields_from_config(conf: &Ini) -> Fields {
-    let section = get_section!(conf, "fields");
     let mut f = Fields::zero();
-    f.e.0 = get_element!(section, "E0", "0 0");
-    f.e.1 = get_element!(section, "E1", "0 0");
-    f.e.2 = get_element!(section, "E2", "0 0");
-    f.b.0 = get_element!(section, "B0", "0");
-    f.b.1 = get_element!(section, "B1", "0");
-    f.b.2 = get_element!(section, "B2", "0");
-    f.omega.1 = get_element!(section, "omega1", "0");
-    f.omega.2 = get_element!(section, "omega2", "0");
-    f.phi = get_element!(section, "phi", 0.0);
+    f.e.0 = conf.get("fields", "E0").unwrap_or(f.e.0);
+    f.e.1 = conf.get("fields", "E1").unwrap_or(f.e.1);
+    f.e.2 = conf.get("fields", "E2").unwrap_or(f.e.2);
+    f.b.0 = conf.get("fields", "B0").unwrap_or(f.b.0);
+    f.b.1 = conf.get("fields", "B1").unwrap_or(f.b.1);
+    f.b.2 = conf.get("fields", "B2").unwrap_or(f.b.2);
+    f.omega.1 = conf.get("fields", "omega1").unwrap_or(f.omega.1);
+    f.omega.2 = conf.get("fields", "omega2").unwrap_or(f.omega.2);
+    f.phi = conf.get("fields", "phi").unwrap_or(f.phi);
     f
 }
 

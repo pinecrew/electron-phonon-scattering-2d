@@ -12,7 +12,7 @@
 //! * probability_error -- relative error of probability
 //! * threads -- number of threads
 
-extern crate ini;
+extern crate tini;
 extern crate scoped_threadpool;
 extern crate scattering;
 extern crate linalg; // need for material
@@ -26,7 +26,7 @@ use std::env::args;
 use std::fs::File;
 use std::io::{BufWriter, Write};
 
-use ini::Ini;
+use tini::Ini;
 use scoped_threadpool::Pool;
 use scattering::{Material, probability};
 use material::SL;
@@ -37,13 +37,12 @@ fn main() {
         None => "config.ini".to_owned(),
     };
 
-    let conf = Ini::load_from_file(&file_name).unwrap();
-    let section = get_section!(conf, "probability");
+    let conf = Ini::from_file(&file_name).unwrap();
 
-    let energy_samples: usize = get_element!(section, "energy_samples", "20");
-    let error: f64 = get_element!(section, "probability_error", "1e-5");
-    let output: String = get_element!(section, "output", "data/prob.dat");
-    let threads: usize = get_element!(section, "threads", "1");
+    let energy_samples: usize = conf.get("probability", "energy_samples").unwrap_or(20);
+    let error: f64 = conf.get("probability", "probability_error").unwrap_or(1e-5);
+    let output: String = conf.get("probability", "output").unwrap_or("data/prob.dat".to_owned());
+    let threads: usize = conf.get("probability", "threads").unwrap_or(1);
 
     let material = SL::without_phonons();
     let mut energies: Vec<f64> = Vec::with_capacity(energy_samples);
