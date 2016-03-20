@@ -31,8 +31,8 @@ pub struct SL {
 impl SL {
     pub fn without_phonons() -> SL {
         let a = Point::new(-PI, -30.0);
-        let b = Point::new( PI, -30.0);
-        let d = Point::new(-PI,  30.0);
+        let b = Point::new(PI, -30.0);
+        let d = Point::new(-PI, 30.0);
         let brillouin_zone = BrillouinZone::new(a, b, d);
         let mut s = SL {
             minimum_energy: 0.0,
@@ -114,7 +114,7 @@ impl Material for SL {
         let b = 1.0 + A * A * p.y * p.y;
         let root = b.sqrt();
         Vec2::new(G * EPS0 / root * p.x.sin(),
-        EPS0 * A * A * p.y / root * (1.0 - G * (1.0 - p.x.cos()) / b))
+                  EPS0 * A * A * p.y / root * (1.0 - G * (1.0 - p.x.cos()) / b))
     }
 
     // Скорость

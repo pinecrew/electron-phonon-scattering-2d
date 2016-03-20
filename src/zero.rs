@@ -1,4 +1,4 @@
-extern crate ini;
+extern crate tini;
 extern crate time;
 extern crate scoped_threadpool;
 extern crate scattering;
@@ -11,44 +11,40 @@ use std::fs::{OpenOptions, remove_file, create_dir};
 use std::io::{BufWriter, Write};
 use std::path::Path;
 
-use ini::Ini;
+use tini::Ini;
 use time::get_time;
 use scoped_threadpool::Pool;
 use scattering::particle::Summary;
 use scattering::{Fields, Stats, create_ensemble};
 use material::SL;
 
-macro_rules! get_element {
-    ($c:ident, $i:expr) => ($c.get($i).unwrap().parse().unwrap();)
-}
-
 fn main() {
     let file_name = match args().nth(1) {
         Some(file) => file,
         None => "config.ini".to_owned(),
     };
-    let conf = Ini::load_from_file(&file_name).unwrap();
+
     let output = Path::new("data/zero-test-new.dat");
     let parent = output.parent()
                        .expect(&format!("Can't get parent directory for `{}`", output.display()));
     if parent.exists() == false {
-        create_dir(parent).ok()
-                          .expect(&format!("Can't create `{}` directory!", parent.display()));
+        create_dir(parent)
+            .ok()
+            .expect(&format!("Can't create `{}` directory!", parent.display()));
     }
 
-    let mut section = conf.section(Some("phonons".to_owned())).unwrap();
-    let optical_energy: f64 = get_element!(section, "optical_energy");
-    let optical_constant: f64 = get_element!(section, "optical_constant");
-    let acoustic_constant: f64 = get_element!(section, "acoustic_constant");
-    let input: String = get_element!(section, "input");
+    let conf = Ini::from_file(&file_name).unwrap();
+    let optical_energy: f64 = conf.get("phonons", "optical_energy").unwrap();
+    let optical_constant: f64 = conf.get("phonons", "optical_constant").unwrap();
+    let acoustic_constant: f64 = conf.get("phonons", "acoustic_constant").unwrap();
+    let input: String = conf.get("phonons", "input").unwrap();
     let m = SL::with_phonons(optical_energy, optical_constant, acoustic_constant, &input);
 
-    section = conf.section(Some("modelling".to_owned())).unwrap();
-    let dt: f64 = get_element!(section, "dt");
-    let all_time: f64 = get_element!(section, "all_time");
-    let temperature: f64 = get_element!(section, "temperature");
-    let particles: usize = get_element!(section, "particles");
-    let threads: usize = get_element!(section, "threads");
+    let dt: f64 = conf.get("modelling", "dt").unwrap();
+    let all_time: f64 = conf.get("modelling", "all_time").unwrap();
+    let temperature: f64 = conf.get("modelling", "temperature").unwrap();
+    let particles: usize = conf.get("modelling", "particles").unwrap();
+    let threads: usize = conf.get("modelling", "threads").unwrap();
 
     let f = Fields::zero();
     clean_result(output);
