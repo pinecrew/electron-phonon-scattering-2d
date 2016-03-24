@@ -3,7 +3,7 @@ use std::io::{BufReader, BufRead};
 use std::f64::consts::PI;
 
 use scattering::material::{Material, BrillouinZone};
-use linalg::{Point, Vec2};
+use linal::{Point, Vec2};
 
 const VF: f64 = 1e6;
 const HBAR: f64 = 6.5e-16;

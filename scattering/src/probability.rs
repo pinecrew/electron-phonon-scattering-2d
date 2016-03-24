@@ -1,6 +1,6 @@
 //! Provides function for calculate probability of electron-phonon scattering
 use material::Material;
-use linalg::Point;
+use linal::Point;
 
 /// Calculates $\int\limits\_{BZ} \delta(E(p)-E) d\^{2} p$
 pub fn probability<T: Material>(energy: f64, m: &T, error: f64) -> f64 {

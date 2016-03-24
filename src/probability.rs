@@ -15,7 +15,7 @@
 extern crate tini;
 extern crate scoped_threadpool;
 extern crate scattering;
-extern crate linalg; // need for material
+extern crate linal; // need for material
 extern crate time;
 
 mod material;

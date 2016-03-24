@@ -1,4 +1,4 @@
-use linalg::Vec2;
+use linal::Vec2;
 use particle::Summary;
 
 pub struct Stats {

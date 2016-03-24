@@ -2,7 +2,7 @@
 
 use material::Material;
 use fields::Fields;
-use linalg::{Point, Vec2, Cross};
+use linal::{Point, Vec2, Cross};
 use rng::Rng;
 
 fn runge<F>(p: &Point, force: F, t: f64, dt: f64) -> Point

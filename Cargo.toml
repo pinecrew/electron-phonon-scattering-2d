@@ -8,7 +8,7 @@ tini = "0.1"
 scoped_threadpool = "0.1.*"
 time = "0.1"
 scattering = { path = "scattering" }
-linalg = { path = "linalg" }
+linal = "0.1"
 
 [[bin]]
 name = "probability"

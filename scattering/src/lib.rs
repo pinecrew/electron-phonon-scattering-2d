@@ -1,4 +1,4 @@
-extern crate linalg;
+extern crate linal;
 
 pub mod material;
 pub mod boltzmann;
@@ -37,7 +37,7 @@ pub fn create_ensemble<T: Material>(n: usize,
 #[test]
 fn zero_field_test() {
     use material::BrillouinZone;
-    use linalg::{Point, Vec2};
+    use linal::{Point, Vec2};
     use particle::Summary;
 
     struct M {
