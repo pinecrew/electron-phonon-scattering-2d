@@ -2,7 +2,7 @@ extern crate tini;
 extern crate time;
 extern crate scoped_threadpool;
 extern crate scattering;
-extern crate linalg;
+extern crate linal;
 
 mod material;
 

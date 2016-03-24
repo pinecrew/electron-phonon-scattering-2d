@@ -1,4 +1,4 @@
-use linalg::{Vec2, Point, Cross, dual_basis};
+use linal::{Vec2, Point, Cross, dual_basis};
 
 pub trait Material {
     /// Energy spectrum of electrons

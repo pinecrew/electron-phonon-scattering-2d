@@ -2,7 +2,7 @@
 use std::f64::consts::PI;
 use std::cmp::PartialOrd;
 use material::Material;
-use linalg::Point;
+use linal::Point;
 use rng::Rng;
 
 fn binary_search<T: PartialOrd>(sorted_array: &[T], value: T) -> usize {
@@ -118,7 +118,7 @@ impl<'a, T: 'a + Material> BoltzmannDistrib<'a, T> {
 #[test]
 fn test_boltzmann() {
     use material::BrillouinZone;
-    use linalg::{Point, Vec2};
+    use linal::{Point, Vec2};
 
     struct M {
         brillouin_zone: BrillouinZone,
