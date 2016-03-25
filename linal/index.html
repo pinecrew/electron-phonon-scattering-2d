@@ -4,10 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="API documentation for the Rust `Cross` trait in crate `linalg`.">
-    <meta name="keywords" content="rust, rustlang, rust-lang, Cross">
+    <meta name="description" content="API documentation for the Rust `linal` crate.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, linal">
 
-    <title>linalg::Cross - Rust</title>
+    <title>linal - Rust</title>
 
     <link rel="stylesheet" type="text/css" href="../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../main.css">
@@ -30,7 +30,7 @@
 
     <nav class="sidebar">
         
-        <p class='location'><a href='index.html'>linalg</a></p><script>window.sidebarCurrent = {name: 'Cross', ty: 'trait', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+        <p class='location'></p><script>window.sidebarCurrent = {name: 'linal', ty: 'mod', relpath: '../'};</script>
     </nav>
 
     <nav class="sub">
@@ -44,29 +44,52 @@
         </form>
     </nav>
 
-    <section id='main' class="content trait">
-<h1 class='fqn'><span class='in-band'>Trait <a href='index.html'>linalg</a>::<wbr><a class='trait' href=''>Cross</a></span><span class='out-of-band'><span id='render-detail'>
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Crate <a class='mod' href=''>linal</a></span><span class='out-of-band'><span id='render-detail'>
             <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                 [<span class='inner'>&#x2212;</span>]
             </a>
-        </span><a id='src-121' class='srclink' href='../src/linalg/lib.rs.html#213-216' title='goto source code'>[src]</a></span></h1>
-<pre class='rust trait'>pub trait Cross&lt;RHS = Self&gt; {
-    type Output;
-    fn <a href='#tymethod.cross' class='fnname'>cross</a>(self, rhs: RHS) -&gt; Self::<a class='trait' href='../linalg/trait.Cross.html' title='linalg::Cross'>Output</a>;
-}</pre>
-            <h2 id='associated-types'>Associated Types</h2>
-            <div class='methods'>
-        <h3 id='associatedtype.Output' class='method stab '><code>type Output</code></h3></div>
-            <h2 id='required-methods'>Required Methods</h2>
-            <div class='methods'>
-        <h3 id='tymethod.cross' class='method stab '><code>fn <a href='#tymethod.cross' class='fnname'>cross</a>(self, rhs: RHS) -&gt; Self::<a class='trait' href='../linalg/trait.Cross.html' title='linalg::Cross'>Output</a></code></h3></div>
-        <h2 id='implementors'>Implementors</h2>
-        <ul class='item-list' id='implementors-list'>
-    <li><code>impl <a class='trait' href='../linalg/trait.Cross.html' title='linalg::Cross'>Cross</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f64.html'>f64</a>&gt; for <a class='struct' href='../linalg/struct.Vec2.html' title='linalg::Vec2'>Vec2</a></code></li>
-<li><code>impl <a class='trait' href='../linalg/trait.Cross.html' title='linalg::Cross'>Cross</a> for <a class='struct' href='../linalg/struct.Vec2.html' title='linalg::Vec2'>Vec2</a></code></li>
-</ul><script type="text/javascript" async
-                              src="../implementors/linalg/trait.Cross.js">
-                      </script></section>
+        </span><a id='src-0' class='srclink' href='../src/linal/lib.rs.html#1-381' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>Simple library to work with 2D vectors and points</p>
+</div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.Point.html'
+                               title='linal::Point'>Point</a></td>
+                        <td class='docblock short'>
+                             <p>2D point in cortesian coordinates</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.Vec2.html'
+                               title='linal::Vec2'>Vec2</a></td>
+                        <td class='docblock short'>
+                             <p>2D vector in cortesian coordinates</p>
+
+                        </td>
+                    </tr>
+                </table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='trait' href='trait.Cross.html'
+                               title='linal::Cross'>Cross</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                </table><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.dual_basis.html'
+                               title='linal::dual_basis'>dual_basis</a></td>
+                        <td class='docblock short'>
+                             <p>Constructs dual basis for given.</p>
+
+                        </td>
+                    </tr>
+                </table></section>
     <section id='search' class="content hidden"></section>
 
     <section class="footer"></section>
@@ -119,7 +142,7 @@
 
     <script>
         window.rootPath = "../";
-        window.currentCrate = "linalg";
+        window.currentCrate = "linal";
         window.playgroundUrl = "";
     </script>
     <script src="../jquery.js"></script>
