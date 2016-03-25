@@ -170,6 +170,126 @@ impl Material for SL {
 }
 
 
+pub struct SL2 {
+    brillouin_zone: BrillouinZone,
+
+    // phonons:
+    optical_energy: f64,
+    acoustic_constant: f64,
+    optical_constant: f64,
+    energies: Vec<f64>,
+    probabilities: Vec<f64>,
+}
+impl SL2 {
+    pub fn without_phonons() -> SL2 {
+        let a = Point::new(-PI, 0.0);
+        let b = Point::new(0.0, -PI);
+        let d = Point::new(0.0, PI);
+        let brillouin_zone = BrillouinZone::new(a, b, d);
+        SL2 {
+            brillouin_zone: brillouin_zone,
+            optical_energy: 0.0,
+            optical_constant: 0.0,
+            acoustic_constant: 0.0,
+            energies: Vec::new(),
+            probabilities: Vec::new(),
+        }
+    }
+    #[allow(dead_code)]
+    pub fn with_phonons(optical_energy: f64,
+                        optical_constant: f64,
+                        acoustic_constant: f64,
+                        fname: &str)
+                        -> SL2 {
+        let mut s = SL2::without_phonons();
+        let (e, p) = read_probabilities(fname);
+        s.optical_energy = optical_energy;
+        s.optical_constant = optical_constant;
+        s.acoustic_constant = acoustic_constant;
+        s.energies = e;
+        s.probabilities = p;
+        s
+    }
+
+    fn probability(&self, energy: f64) -> f64 {
+        let step = self.energies[1] - self.energies[0];
+
+        if energy < self.energies[0] || energy > self.energies[self.energies.len() - 1] {
+            return 0.0;
+        }
+
+        let pos = (energy - self.energies[0]) / step;
+        let i = pos.floor() as usize;
+        let w = pos - pos.floor();
+        self.probabilities[i] * (1.0 - w) + self.probabilities[i + 1] * w
+    }
+}
+
+impl Material for SL2 {
+    // Выражение для энергетического спектра (в декартовых координатах)
+    fn energy(&self, p: &Point) -> f64 {
+        EPS1 * (1.0 - p.x.cos() * p.y.cos()) / 2.0
+    }
+
+
+    // Градиент энергии в импульсном пространстве
+    fn energy_gradient(&self, p: &Point) -> Vec2 {
+        Vec2::new(p.x.sin() * p.y.cos(), p.x.cos() * p.y.sin()) * EPS1 / 2.0
+    }
+
+    // Скорость
+    fn velocity(&self, p: &Point) -> Vec2 {
+        self.energy_gradient(&p) * (D / HBAR / C)
+    }
+
+    fn momentums(&self, e: f64, theta: f64) -> Vec<Point> {
+        let samples = 20;
+        let precision = 1e-7;
+        let dir = Vec2::from_polar(1.0, theta);
+        let step = dir * self.brillouin_zone().pmax(theta) / (samples as f64);
+
+        let mut ps: Vec<Point> = Vec::new();
+
+        for i in 0..samples {
+            let mut left = Point::from_vec2(step * i as f64);
+            let mut right = left + step;
+            if (self.energy(&left) - e) * (self.energy(&right) - e) < 0.0 {
+                while (right - left).len() > precision {
+                    let middle = left + (right - left) / 2.0;
+                    if (self.energy(&left) - e) * (self.energy(&middle) - e) < 0.0 {
+                        right = middle;
+                    } else {
+                        left = middle;
+                    }
+                }
+
+                ps.push(left + (right - left) / 2.0);
+            }
+        }
+        ps
+    }
+
+    fn min_energy(&self) -> f64 {
+        0.0
+    }
+    fn max_energy(&self) -> f64 {
+        EPS1
+    }
+    fn brillouin_zone(&self) -> &BrillouinZone {
+        &(self.brillouin_zone)
+    }
+    fn optical_energy(&self) -> f64 {
+        self.optical_energy
+    }
+    fn optical_scattering(&self, p: &Point) -> f64 {
+        self.optical_constant * self.probability(self.energy(p) - self.optical_energy)
+    }
+    fn acoustic_scattering(&self, p: &Point) -> f64 {
+        self.acoustic_constant * self.probability(self.energy(p))
+    }
+}
+
+
 fn read_probabilities(filename: &str) -> (Vec<f64>, Vec<f64>) {
     let file = File::open(filename)
                    .ok()

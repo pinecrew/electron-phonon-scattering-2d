@@ -16,7 +16,7 @@ use time::{get_time, SteadyTime};
 use scoped_threadpool::Pool;
 use scattering::particle::Summary;
 use scattering::{Fields, Stats, create_ensemble};
-use material::SL;
+use material::SL2;
 
 fn main() {
     let file_name = match args().nth(1) {
@@ -31,7 +31,7 @@ fn main() {
     let optical_constant: f64 = conf.get("phonons", "optical_constant").unwrap_or(1.5e-3);
     let acoustic_constant: f64 = conf.get("phonons", "acoustic_constant").unwrap_or(1.5e-3);
     let input: String = conf.get("phonons", "input").unwrap_or("data/prob.dat".to_owned());
-    let m = SL::with_phonons(optical_energy, optical_constant, acoustic_constant, &input);
+    let m = SL2::with_phonons(optical_energy, optical_constant, acoustic_constant, &input);
 
     let dt: f64 = conf.get("modelling", "dt").unwrap_or(1e-1);
     let all_time: f64 = conf.get("modelling", "all_time").unwrap_or(1e3);
@@ -176,10 +176,12 @@ fn clean_result(filename: &Path) {
 
 fn append_result_line(filename: &Path, fields: &Fields, result: &Stats) {
     let parent = filename.parent()
-                         .expect(&format!("Can't get parent directory for `{}`", filename.display()));
+                         .expect(&format!("Can't get parent directory for `{}`",
+                                          filename.display()));
     if parent.exists() == false {
-        create_dir(parent).ok()
-                          .expect(&format!("Can't create `{}` directory!", parent.display()));
+        create_dir(parent)
+            .ok()
+            .expect(&format!("Can't create `{}` directory!", parent.display()));
     }
     let file = OpenOptions::new()
                    .create(true)

@@ -28,7 +28,7 @@ use std::path::Path;
 use tini::Ini;
 use scoped_threadpool::Pool;
 use scattering::{Material, probability};
-use material::SL;
+use material::SL2;
 
 fn main() {
     let file_name = match args().nth(1) {
@@ -44,7 +44,7 @@ fn main() {
     let output = Path::new(&output);
     let threads: usize = conf.get("probability", "threads").unwrap_or(1);
 
-    let material = SL::without_phonons();
+    let material = SL2::without_phonons();
     let mut energies: Vec<f64> = Vec::with_capacity(energy_samples);
     let mut probabilities = vec![0f64; energy_samples];
 
