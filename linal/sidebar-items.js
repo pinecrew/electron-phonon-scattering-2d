@@ -1,1 +1,0 @@
-initSidebarItems({"fn":[["dual_basis","Constructs dual basis for given."]],"struct":[["Point","2D point in cortesian coordinates"],["Vec2","2D vector in cortesian coordinates"]],"trait":[["Cross",""]]});
