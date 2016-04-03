@@ -4,20 +4,4 @@ version = "0.1.0"
 authors = ["Vova Abdrakhmanov <369565@gmail.com>", "Alexey Golubev <dr.freecx@gmail.com>"]
 
 [dependencies]
-tini = "0.1"
-scoped_threadpool = "0.1.*"
-time = "0.1"
-scattering = { path = "scattering" }
 linal = "0.1"
-
-[[bin]]
-name = "probability"
-path = "src/probability.rs"
-
-[[bin]]
-name = "current"
-path = "src/current.rs"
-
-[[bin]]
-name = "zero-test"
-path = "src/zero.rs"

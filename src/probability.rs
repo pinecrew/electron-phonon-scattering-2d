@@ -1,98 +1,65 @@
-//! Probability is a program for calculation probability of electron-phonon scattering.
-//!
-//! # Usage
-//! ````bash
-//! $ probability [config]
-//! ````
-//! where [config] is a ini-file. If no file is specified `config.ini` is used.
-//! This file __must__ include section `[probability]` with following contents:
-//!
-//! * output -- path to output file
-//! * energy_samples -- path to output file
-//! * probability_error -- relative error of probability
-//! * threads -- number of threads
+//! Provides function for calculate probability of electron-phonon scattering
+use material::Material;
+use linal::Point;
 
-extern crate tini;
-extern crate scoped_threadpool;
-extern crate scattering;
-extern crate linal; // need for material
-extern crate time;
+/// Calculates $\int\limits\_{BZ} \delta(E(p)-E) d\^{2} p$
+pub fn probability<T: Material>(energy: f64, m: &T, error: f64) -> f64 {
+    use std::f64::consts::PI;
+    use std::cmp::min;
 
-mod material;
+    let mut old: f64 = 0.0;
+    let mut new: f64 = 1.0;
+    let mut n = 500;
+    let mut iters_left = 12;
+    while (new - old).abs() / new > error && iters_left > 0 {
+        old = new;
+        new = 0.0;
+        let dtheta = 2.0 * PI / (n as f64);
 
-use std::env::args;
-use std::fs::{File, create_dir};
-use std::io::{BufWriter, Write};
-use std::path::Path;
+        let mut prev: Vec<Point> = m.momentums(energy, 0f64);
 
-use tini::Ini;
-use scoped_threadpool::Pool;
-use scattering::{Material, probability};
-use material::SL;
+        for i in 1..n + 1 {
+            let theta = (i as f64) * dtheta;
+            let curr = m.momentums(energy, theta);
+            let l = min(curr.len(), prev.len());
+            for j in 0..l {
+                new += (curr[j] - prev[j]).len() / m.energy_gradient(&curr[j]).len();
+            }
 
-fn main() {
-    let file_name = match args().nth(1) {
-        Some(file) => file,
-        None => "config.ini".to_owned(),
-    };
+            // find endpoints
+            for i in prev.len()..curr.len() {
+                let mut dtheta = dtheta;
+                let mut theta = theta;
+                while dtheta > 1e-9 {
+                    if m.momentums(energy, theta - dtheta).len() > i {
+                        theta -= dtheta;
+                    } else {
+                        dtheta /= 2.0;
+                    }
+                }
+                new += (curr[i] - m.momentums(energy, theta)[i]).len() /
+                       m.energy_gradient(&curr[i]).len();
+            }
 
-    let conf = Ini::from_file(&file_name).unwrap();
 
-    let energy_samples: usize = conf.get("probability", "energy_samples").unwrap_or(20);
-    let error: f64 = conf.get("probability", "probability_error").unwrap_or(1e-5);
-    let output: String = conf.get("probability", "output").unwrap_or("data/prob.dat".to_owned());
-    let output = Path::new(&output);
-    let threads: usize = conf.get("probability", "threads").unwrap_or(1);
+            for i in curr.len()..prev.len() {
+                let mut dtheta = dtheta;
+                let mut theta = theta - dtheta;
+                while dtheta > 1e-9 {
+                    if m.momentums(energy, theta + dtheta).len() > i {
+                        theta += dtheta;
+                    } else {
+                        dtheta /= 2.0;
+                    }
+                }
+                new += (prev[i] - m.momentums(energy, theta)[i]).len() /
+                       m.energy_gradient(&prev[i]).len();
+            }
 
-    let material = SL::without_phonons();
-    let mut energies: Vec<f64> = Vec::with_capacity(energy_samples);
-    let mut probabilities = vec![0f64; energy_samples];
-
-    let energy_step = (material.max_energy() - material.min_energy()) /
-                      (energy_samples as f64 - 1.0);
-    for i in 0..energy_samples {
-        let e = material.min_energy() + energy_step * (i as f64);
-        energies.push(e);
-    }
-
-    let mut pool = Pool::new(threads as u32);
-
-    println!("calculate probabilities for `{}`", file_name);
-    println!("you can find results in `{}`", output.display());
-
-    let all_time_start = time::SteadyTime::now();
-    pool.scoped(|scope| {
-        for (index, item) in probabilities.iter_mut().enumerate() {
-            let ref material = material;
-            let error = error;
-            let energy = energies[index];
-            scope.execute(move || {
-                *item = probability(energy, material, error);
-            });
+            prev = curr;
         }
-    });
-    let all_time_stop = time::SteadyTime::now();
-    println!(">> total time: {}",
-             (all_time_stop - all_time_start).num_seconds());
-
-    write_probabilities(&output, &energies, &probabilities);
-}
-
-fn write_probabilities(filename: &Path, energies: &Vec<f64>, probabilities: &Vec<f64>) {
-    let parent = filename.parent()
-                         .expect(&format!("Can't get parent directory for `{}`",
-                                          filename.display()));
-    if parent.exists() == false {
-        create_dir(parent)
-            .ok()
-            .expect(&format!("Can't create `{}` directory!", parent.display()));
+        n *= 2;
+        iters_left -= 1;
     }
-    let file = File::create(filename)
-                   .ok()
-                   .expect(&format!("Can't create `{}`", filename.display()));
-    let mut writer = BufWriter::new(file);
-    let data = energies.iter().zip(probabilities);
-    for (e, p) in data {
-        write!(writer, "{:10.3e} {:10.3e}\n", e, p).unwrap();
-    }
+    new
 }
