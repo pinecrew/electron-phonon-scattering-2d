@@ -49,14 +49,14 @@
             <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                 [<span class='inner'>&#x2212;</span>]
             </a>
-        </span><a id='src-40' class='srclink' href='../../src/scattering/material.rs.html#33-40' title='goto source code'>[src]</a></span></h1>
+        </span><a id='src-40' class='srclink' href='../../src/scattering/src/material.rs.html#33-40' title='goto source code'>[src]</a></span></h1>
 <pre class='rust struct'>pub struct BrillouinZone {
     pub a: Point,
     pub b: Point,
     pub c: Point,
     pub d: Point,
-    pub basis: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(Vec2, Vec2)</a>,
-    pub dual_basis: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(Vec2, Vec2)</a>,
+    pub basis: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(</a>Vec2, Vec2<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>)</a>,
+    pub dual_basis: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(</a>Vec2, Vec2<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>)</a>,
 }</pre><div class='docblock'><p>Representation of tetragonal brillouin zone of 2D material.
 a, b, c, and d are vertices of tetragon.</p>
 </div><h2 class='fields'>Fields</h2>
@@ -72,7 +72,7 @@ a, b, c, and d are vertices of tetragon.</p>
 </div><h4 id='method.pmax' class='method'><code>fn <a href='#method.pmax' class='fnname'>pmax</a>(&amp;self, theta: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f64.html'>f64</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f64.html'>f64</a></code></h4>
 <div class='docblock'><p>Calculates maximum value of momentum in direction $\theta$ in first brillouin zone</p>
 </div></div><h2 id='implementations'>Trait Implementations</h2><h3 id='derived_implementations'>Derived Implementations </h3><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> for <a class='struct' href='../../scattering/material/struct.BrillouinZone.html' title='scattering::material::BrillouinZone'>BrillouinZone</a></code></h3><div class='impl-items'><h4 id='method.clone' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone' class='fnname'>clone</a>(&amp;self) -&gt; <a class='struct' href='../../scattering/material/struct.BrillouinZone.html' title='scattering::material::BrillouinZone'>BrillouinZone</a></code></h4>
-<h4 id='method.clone_from' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from' class='fnname'>clone_from</a>(&amp;mut self, source: &amp;Self)</code></h4>
+<h4 id='method.clone_from' class='method'><span class="since">1.0.0</span><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from' class='fnname'>clone_from</a>(&amp;mut self, source: &amp;Self)</code></h4>
 </div></section>
     <section id='search' class="content hidden"></section>
 
@@ -116,7 +116,7 @@ a, b, c, and d are vertices of tetragon.</p>
 
                 <p>
                     Search functions by type signature (e.g.
-                    <code>vec -> usize</code>)
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
                 </p>
             </div>
         </div>
