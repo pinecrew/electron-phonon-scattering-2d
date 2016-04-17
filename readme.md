@@ -4,4 +4,4 @@
 
 |[Documentation](http://pinecrew.github.io/electron-phonon-scattering-2d/scattering)|
 
-There are library, providing calculations of dc-component of current in two-dimensional materials with electron-phonon scattering in electromagnetic field.
+It's a library, providing calculations of dc-component of current in two-dimensional materials with electron-phonon scattering in electromagnetic field.
