@@ -238,7 +238,7 @@
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>f64</span>::<span class='ident'>consts</span>::<span class='ident'>PI</span>;
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>cmp</span>::<span class='ident'>PartialOrd</span>;
 <span class='kw'>use</span> <span class='ident'>material</span>::<span class='ident'>Material</span>;
-<span class='kw'>use</span> <span class='ident'>linal</span>::<span class='ident'>Point</span>;
+<span class='kw'>use</span> <span class='ident'>linal</span>::<span class='ident'>Vec2</span>;
 <span class='kw'>use</span> <span class='ident'>rng</span>::<span class='ident'>Rng</span>;
 
 <span class='kw'>fn</span> <span class='ident'>binary_search</span><span class='op'>&lt;</span><span class='ident'>T</span>: <span class='ident'>PartialOrd</span><span class='op'>&gt;</span>(<span class='ident'>sorted_array</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>T</span>], <span class='ident'>value</span>: <span class='ident'>T</span>) <span class='op'>-&gt;</span> <span class='ident'>usize</span> {
@@ -317,9 +317,9 @@
         }
     }
     <span class='doccomment'>/// Make ensemble of n particles with Boltzmann distribution</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>make_dist</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>seed</span>: <span class='ident'>u32</span>, <span class='ident'>n</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>Point</span><span class='op'>&gt;</span> {
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>make_dist</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>seed</span>: <span class='ident'>u32</span>, <span class='ident'>n</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>Vec2</span><span class='op'>&gt;</span> {
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>rng</span> <span class='op'>=</span> <span class='ident'>Rng</span>::<span class='ident'>new</span>(<span class='ident'>seed</span>);
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>points</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>Point</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='ident'>Vec</span>::<span class='ident'>with_capacity</span>(<span class='ident'>n</span>);
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>points</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>Vec2</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='ident'>Vec</span>::<span class='ident'>with_capacity</span>(<span class='ident'>n</span>);
         <span class='kw'>for</span> _ <span class='kw'>in</span> <span class='number'>0</span>..<span class='ident'>n</span> {
             <span class='kw'>let</span> <span class='ident'>theta</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>angle</span>(<span class='ident'>rng</span>.<span class='ident'>uniform</span>());
             <span class='kw'>let</span> <span class='ident'>p</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>momentum</span>(<span class='ident'>theta</span>, <span class='ident'>rng</span>.<span class='ident'>uniform</span>());
@@ -327,7 +327,7 @@
         }
         <span class='ident'>points</span>
     }
-    <span class='kw'>fn</span> <span class='ident'>momentum</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>theta</span>: <span class='ident'>f64</span>, <span class='ident'>r</span>: <span class='ident'>f64</span>) <span class='op'>-&gt;</span> <span class='ident'>Point</span> {
+    <span class='kw'>fn</span> <span class='ident'>momentum</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>theta</span>: <span class='ident'>f64</span>, <span class='ident'>r</span>: <span class='ident'>f64</span>) <span class='op'>-&gt;</span> <span class='ident'>Vec2</span> {
         <span class='kw'>let</span> <span class='ident'>n</span> <span class='op'>=</span> <span class='number'>1000</span>;
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>dist</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>0.0</span>; <span class='ident'>n</span>];
         <span class='kw'>let</span> <span class='ident'>pm</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>material</span>.<span class='ident'>brillouin_zone</span>().<span class='ident'>pmax</span>(<span class='ident'>theta</span>);
@@ -342,7 +342,7 @@
         <span class='kw'>let</span> <span class='ident'>i</span> <span class='op'>=</span> <span class='ident'>binary_search</span>(<span class='kw-2'>&amp;</span><span class='ident'>dist</span>, <span class='ident'>r</span>);
         <span class='kw'>let</span> <span class='ident'>w</span> <span class='op'>=</span> (<span class='ident'>r</span> <span class='op'>-</span> <span class='ident'>dist</span>[<span class='ident'>i</span>]) <span class='op'>/</span> (<span class='ident'>dist</span>[<span class='ident'>i</span> <span class='op'>+</span> <span class='number'>1</span>] <span class='op'>-</span> <span class='ident'>dist</span>[<span class='ident'>i</span>]);
         <span class='kw'>let</span> <span class='ident'>p</span> <span class='op'>=</span> (<span class='ident'>i</span> <span class='kw'>as</span> <span class='ident'>f64</span> <span class='op'>+</span> <span class='ident'>w</span>) <span class='op'>/</span> (<span class='ident'>n</span> <span class='op'>-</span> <span class='number'>1</span>) <span class='kw'>as</span> <span class='ident'>f64</span> <span class='op'>*</span> <span class='ident'>pm</span>;
-        <span class='ident'>Point</span>::<span class='ident'>from_polar</span>(<span class='ident'>p</span>, <span class='ident'>theta</span>)
+        <span class='ident'>Vec2</span>::<span class='ident'>from_polar</span>(<span class='ident'>p</span>, <span class='ident'>theta</span>)
     }
     <span class='kw'>fn</span> <span class='ident'>angle</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>r</span>: <span class='ident'>f64</span>) <span class='op'>-&gt;</span> <span class='ident'>f64</span> {
         <span class='kw'>let</span> <span class='ident'>i</span> <span class='op'>=</span> <span class='ident'>binary_search</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>angle_distrib</span>, <span class='ident'>r</span>);
@@ -354,28 +354,28 @@
 <span class='attribute'>#[<span class='ident'>test</span>]</span>
 <span class='kw'>fn</span> <span class='ident'>test_boltzmann</span>() {
     <span class='kw'>use</span> <span class='ident'>material</span>::<span class='ident'>BrillouinZone</span>;
-    <span class='kw'>use</span> <span class='ident'>linal</span>::{<span class='ident'>Point</span>, <span class='ident'>Vec2</span>};
+    <span class='kw'>use</span> <span class='ident'>linal</span>::<span class='ident'>Vec2</span>;
 
     <span class='kw'>struct</span> <span class='ident'>M</span> {
         <span class='ident'>brillouin_zone</span>: <span class='ident'>BrillouinZone</span>,
     };
     <span class='kw'>impl</span> <span class='ident'>M</span> {
         <span class='kw'>fn</span> <span class='ident'>new</span>() <span class='op'>-&gt;</span> <span class='ident'>M</span> {
-            <span class='kw'>let</span> <span class='ident'>bz</span> <span class='op'>=</span> <span class='ident'>BrillouinZone</span>::<span class='ident'>new</span>(<span class='ident'>Point</span>::<span class='ident'>new</span>(<span class='op'>-</span><span class='number'>1.0</span>, <span class='op'>-</span><span class='number'>1.0</span>),
-                                        <span class='ident'>Point</span>::<span class='ident'>new</span>(<span class='number'>1.0</span>, <span class='op'>-</span><span class='number'>1.0</span>),
-                                        <span class='ident'>Point</span>::<span class='ident'>new</span>(<span class='op'>-</span><span class='number'>1.0</span>, <span class='number'>1.0</span>));
+            <span class='kw'>let</span> <span class='ident'>bz</span> <span class='op'>=</span> <span class='ident'>BrillouinZone</span>::<span class='ident'>new</span>(<span class='ident'>Vec2</span>::<span class='ident'>new</span>(<span class='op'>-</span><span class='number'>1.0</span>, <span class='op'>-</span><span class='number'>1.0</span>),
+                                        <span class='ident'>Vec2</span>::<span class='ident'>new</span>(<span class='number'>1.0</span>, <span class='op'>-</span><span class='number'>1.0</span>),
+                                        <span class='ident'>Vec2</span>::<span class='ident'>new</span>(<span class='op'>-</span><span class='number'>1.0</span>, <span class='number'>1.0</span>));
             <span class='ident'>M</span> { <span class='ident'>brillouin_zone</span>: <span class='ident'>bz</span> }
         }
     }
     <span class='kw'>impl</span> <span class='ident'>Material</span> <span class='kw'>for</span> <span class='ident'>M</span> {
-        <span class='kw'>fn</span> <span class='ident'>energy</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>p</span>: <span class='kw-2'>&amp;</span><span class='ident'>Point</span>) <span class='op'>-&gt;</span> <span class='ident'>f64</span> {
-            <span class='kw'>let</span> <span class='ident'>q</span> <span class='op'>=</span> <span class='ident'>p</span>.<span class='ident'>position</span>();
+        <span class='kw'>fn</span> <span class='ident'>energy</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>p</span>: <span class='kw-2'>&amp;</span><span class='ident'>Vec2</span>) <span class='op'>-&gt;</span> <span class='ident'>f64</span> {
+            <span class='kw'>let</span> <span class='ident'>q</span> <span class='op'>=</span> <span class='op'>*</span><span class='ident'>p</span>;
             <span class='ident'>q</span>.<span class='ident'>dot</span>(<span class='ident'>q</span>) <span class='op'>/</span> <span class='number'>20.0</span>
         }
-        <span class='kw'>fn</span> <span class='ident'>energy_gradient</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, _: <span class='kw-2'>&amp;</span><span class='ident'>Point</span>) <span class='op'>-&gt;</span> <span class='ident'>Vec2</span> {
+        <span class='kw'>fn</span> <span class='ident'>energy_gradient</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, _: <span class='kw-2'>&amp;</span><span class='ident'>Vec2</span>) <span class='op'>-&gt;</span> <span class='ident'>Vec2</span> {
             <span class='macro'>unimplemented</span><span class='macro'>!</span>();
         }
-        <span class='kw'>fn</span> <span class='ident'>velocity</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, _: <span class='kw-2'>&amp;</span><span class='ident'>Point</span>) <span class='op'>-&gt;</span> <span class='ident'>Vec2</span> {
+        <span class='kw'>fn</span> <span class='ident'>velocity</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, _: <span class='kw-2'>&amp;</span><span class='ident'>Vec2</span>) <span class='op'>-&gt;</span> <span class='ident'>Vec2</span> {
             <span class='macro'>unimplemented</span><span class='macro'>!</span>();
         }
         <span class='kw'>fn</span> <span class='ident'>min_energy</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>f64</span> {
@@ -384,7 +384,7 @@
         <span class='kw'>fn</span> <span class='ident'>max_energy</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>f64</span> {
             <span class='number'>0.1</span>
         }
-        <span class='kw'>fn</span> <span class='ident'>momentums</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, _: <span class='ident'>f64</span>, _: <span class='ident'>f64</span>) <span class='op'>-&gt;</span> <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>Point</span><span class='op'>&gt;</span> {
+        <span class='kw'>fn</span> <span class='ident'>momentums</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, _: <span class='ident'>f64</span>, _: <span class='ident'>f64</span>) <span class='op'>-&gt;</span> <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>Vec2</span><span class='op'>&gt;</span> {
             <span class='macro'>unimplemented</span><span class='macro'>!</span>();
         }
         <span class='kw'>fn</span> <span class='ident'>brillouin_zone</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='ident'>BrillouinZone</span> {
@@ -393,10 +393,10 @@
         <span class='kw'>fn</span> <span class='ident'>optical_energy</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>f64</span> {
             <span class='macro'>unimplemented</span><span class='macro'>!</span>();
         }
-        <span class='kw'>fn</span> <span class='ident'>optical_scattering</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, _: <span class='kw-2'>&amp;</span><span class='ident'>Point</span>) <span class='op'>-&gt;</span> <span class='ident'>f64</span> {
+        <span class='kw'>fn</span> <span class='ident'>optical_scattering</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, _: <span class='kw-2'>&amp;</span><span class='ident'>Vec2</span>) <span class='op'>-&gt;</span> <span class='ident'>f64</span> {
             <span class='macro'>unimplemented</span><span class='macro'>!</span>();
         }
-        <span class='kw'>fn</span> <span class='ident'>acoustic_scattering</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, _: <span class='kw-2'>&amp;</span><span class='ident'>Point</span>) <span class='op'>-&gt;</span> <span class='ident'>f64</span> {
+        <span class='kw'>fn</span> <span class='ident'>acoustic_scattering</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, _: <span class='kw-2'>&amp;</span><span class='ident'>Vec2</span>) <span class='op'>-&gt;</span> <span class='ident'>f64</span> {
             <span class='macro'>unimplemented</span><span class='macro'>!</span>();
         }
     }
@@ -420,7 +420,7 @@
     }
 
 
-    <span class='kw'>let</span> <span class='ident'>ave</span> <span class='op'>=</span> <span class='ident'>init_condition</span>.<span class='ident'>iter</span>().<span class='ident'>fold</span>(<span class='ident'>Vec2</span>::<span class='ident'>zero</span>(), <span class='op'>|</span><span class='ident'>acc</span>, <span class='ident'>x</span><span class='op'>|</span> <span class='ident'>acc</span> <span class='op'>+</span> <span class='ident'>x</span>.<span class='ident'>position</span>()) <span class='op'>/</span> <span class='number'>10_000f64</span>;
+    <span class='kw'>let</span> <span class='ident'>ave</span> <span class='op'>=</span> <span class='ident'>init_condition</span>.<span class='ident'>iter</span>().<span class='ident'>fold</span>(<span class='ident'>Vec2</span>::<span class='ident'>zero</span>(), <span class='op'>|</span><span class='ident'>acc</span>, <span class='kw-2'>&amp;</span><span class='ident'>x</span><span class='op'>|</span> <span class='ident'>acc</span> <span class='op'>+</span> <span class='ident'>x</span>) <span class='op'>/</span> <span class='number'>10_000f64</span>;
     <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>ave</span>.<span class='ident'>len</span>() <span class='op'>&lt;</span> <span class='number'>0.01</span>);
 }
 </pre>

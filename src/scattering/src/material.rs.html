@@ -183,49 +183,49 @@
 <span id="137">137</span>
 <span id="138">138</span>
 </pre><pre class='rust '>
-<span class='kw'>use</span> <span class='ident'>linal</span>::{<span class='ident'>Vec2</span>, <span class='ident'>Point</span>, <span class='ident'>Cross</span>, <span class='ident'>dual_basis</span>};
+<span class='kw'>use</span> <span class='ident'>linal</span>::{<span class='ident'>Vec2</span>};
 
 <span class='kw'>pub</span> <span class='kw'>trait</span> <span class='ident'>Material</span> {
     <span class='doccomment'>/// Energy spectrum of electrons</span>
-    <span class='kw'>fn</span> <span class='ident'>energy</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>p</span>: <span class='kw-2'>&amp;</span><span class='ident'>Point</span>) <span class='op'>-&gt;</span> <span class='ident'>f64</span>;
+    <span class='kw'>fn</span> <span class='ident'>energy</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>p</span>: <span class='kw-2'>&amp;</span><span class='ident'>Vec2</span>) <span class='op'>-&gt;</span> <span class='ident'>f64</span>;
     <span class='doccomment'>/// Energy spectrum in polar coordinates</span>
     <span class='kw'>fn</span> <span class='ident'>energy_polar</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>p</span>: <span class='ident'>f64</span>, <span class='ident'>theta</span>: <span class='ident'>f64</span>) <span class='op'>-&gt;</span> <span class='ident'>f64</span> {
-        <span class='self'>self</span>.<span class='ident'>energy</span>(<span class='kw-2'>&amp;</span><span class='ident'>Point</span>::<span class='ident'>from_polar</span>(<span class='ident'>p</span>, <span class='ident'>theta</span>))
+        <span class='self'>self</span>.<span class='ident'>energy</span>(<span class='kw-2'>&amp;</span><span class='ident'>Vec2</span>::<span class='ident'>from_polar</span>(<span class='ident'>p</span>, <span class='ident'>theta</span>))
     }
     <span class='doccomment'>/// Gradient of energy in momentum space</span>
-    <span class='kw'>fn</span> <span class='ident'>energy_gradient</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>p</span>: <span class='kw-2'>&amp;</span><span class='ident'>Point</span>) <span class='op'>-&gt;</span> <span class='ident'>Vec2</span>;
+    <span class='kw'>fn</span> <span class='ident'>energy_gradient</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>p</span>: <span class='kw-2'>&amp;</span><span class='ident'>Vec2</span>) <span class='op'>-&gt;</span> <span class='ident'>Vec2</span>;
 
-    <span class='kw'>fn</span> <span class='ident'>velocity</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>p</span>: <span class='kw-2'>&amp;</span><span class='ident'>Point</span>) <span class='op'>-&gt;</span> <span class='ident'>Vec2</span>;
+    <span class='kw'>fn</span> <span class='ident'>velocity</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>p</span>: <span class='kw-2'>&amp;</span><span class='ident'>Vec2</span>) <span class='op'>-&gt;</span> <span class='ident'>Vec2</span>;
     <span class='doccomment'>/// Minimum of energy in brillouin zone</span>
     <span class='kw'>fn</span> <span class='ident'>min_energy</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>f64</span>;
     <span class='doccomment'>/// Maximum of energy in brillouin zone</span>
     <span class='kw'>fn</span> <span class='ident'>max_energy</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>f64</span>;
     <span class='doccomment'>/// Solves equation energy_polar(p, theta) = energy</span>
-    <span class='kw'>fn</span> <span class='ident'>momentums</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>energy</span>: <span class='ident'>f64</span>, <span class='ident'>theta</span>: <span class='ident'>f64</span>) <span class='op'>-&gt;</span> <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>Point</span><span class='op'>&gt;</span>;
+    <span class='kw'>fn</span> <span class='ident'>momentums</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>energy</span>: <span class='ident'>f64</span>, <span class='ident'>theta</span>: <span class='ident'>f64</span>) <span class='op'>-&gt;</span> <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>Vec2</span><span class='op'>&gt;</span>;
     <span class='doccomment'>/// brillouin zone structure</span>
     <span class='kw'>fn</span> <span class='ident'>brillouin_zone</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='ident'>BrillouinZone</span>;
     <span class='doccomment'>/// optical phonon energy</span>
     <span class='kw'>fn</span> <span class='ident'>optical_energy</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>f64</span>;
     <span class='doccomment'>/// optical phonon scattering probability</span>
-    <span class='kw'>fn</span> <span class='ident'>optical_scattering</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>p</span>: <span class='kw-2'>&amp;</span><span class='ident'>Point</span>) <span class='op'>-&gt;</span> <span class='ident'>f64</span>;
+    <span class='kw'>fn</span> <span class='ident'>optical_scattering</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>p</span>: <span class='kw-2'>&amp;</span><span class='ident'>Vec2</span>) <span class='op'>-&gt;</span> <span class='ident'>f64</span>;
     <span class='doccomment'>/// acoustic phonon scattering probability</span>
-    <span class='kw'>fn</span> <span class='ident'>acoustic_scattering</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>p</span>: <span class='kw-2'>&amp;</span><span class='ident'>Point</span>) <span class='op'>-&gt;</span> <span class='ident'>f64</span>;
+    <span class='kw'>fn</span> <span class='ident'>acoustic_scattering</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>p</span>: <span class='kw-2'>&amp;</span><span class='ident'>Vec2</span>) <span class='op'>-&gt;</span> <span class='ident'>f64</span>;
 }
 
 <span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>)]</span>
 <span class='doccomment'>/// Representation of tetragonal brillouin zone of 2D material.</span>
 <span class='doccomment'>/// a, b, c, and d are vertices of tetragon.</span>
 <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>BrillouinZone</span> {
-    <span class='kw'>pub</span> <span class='ident'>a</span>: <span class='ident'>Point</span>,
-    <span class='kw'>pub</span> <span class='ident'>b</span>: <span class='ident'>Point</span>,
-    <span class='kw'>pub</span> <span class='ident'>c</span>: <span class='ident'>Point</span>,
-    <span class='kw'>pub</span> <span class='ident'>d</span>: <span class='ident'>Point</span>,
+    <span class='kw'>pub</span> <span class='ident'>a</span>: <span class='ident'>Vec2</span>,
+    <span class='kw'>pub</span> <span class='ident'>b</span>: <span class='ident'>Vec2</span>,
+    <span class='kw'>pub</span> <span class='ident'>c</span>: <span class='ident'>Vec2</span>,
+    <span class='kw'>pub</span> <span class='ident'>d</span>: <span class='ident'>Vec2</span>,
     <span class='kw'>pub</span> <span class='ident'>basis</span>: (<span class='ident'>Vec2</span>, <span class='ident'>Vec2</span>),
     <span class='kw'>pub</span> <span class='ident'>dual_basis</span>: (<span class='ident'>Vec2</span>, <span class='ident'>Vec2</span>),
 }
 
 <span class='kw'>impl</span> <span class='ident'>BrillouinZone</span> {
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>a</span>: <span class='ident'>Point</span>, <span class='ident'>b</span>: <span class='ident'>Point</span>, <span class='ident'>d</span>: <span class='ident'>Point</span>) <span class='op'>-&gt;</span> <span class='ident'>BrillouinZone</span> {
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>a</span>: <span class='ident'>Vec2</span>, <span class='ident'>b</span>: <span class='ident'>Vec2</span>, <span class='ident'>d</span>: <span class='ident'>Vec2</span>) <span class='op'>-&gt;</span> <span class='ident'>BrillouinZone</span> {
         <span class='kw'>let</span> <span class='ident'>v1</span> <span class='op'>=</span> <span class='ident'>b</span> <span class='op'>-</span> <span class='ident'>a</span>;
         <span class='kw'>let</span> <span class='ident'>v2</span> <span class='op'>=</span> <span class='ident'>d</span> <span class='op'>-</span> <span class='ident'>a</span>;
         <span class='kw'>let</span> <span class='ident'>c</span> <span class='op'>=</span> <span class='ident'>a</span> <span class='op'>+</span> <span class='ident'>v1</span> <span class='op'>+</span> <span class='ident'>v2</span>;
@@ -237,12 +237,12 @@
             <span class='ident'>c</span>: <span class='ident'>c</span>,
             <span class='ident'>d</span>: <span class='ident'>d</span>,
             <span class='ident'>basis</span>: <span class='ident'>basis</span>,
-            <span class='ident'>dual_basis</span>: <span class='ident'>dual_basis</span>(<span class='ident'>basis</span>),
+            <span class='ident'>dual_basis</span>: <span class='ident'>Vec2</span>::<span class='ident'>dual_basis</span>(<span class='ident'>basis</span>),
         }
     }
 
     <span class='doccomment'>/// Returns equivalent momentum in first brillouin zone</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>to_first_bz</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>p</span>: <span class='kw-2'>&amp;</span><span class='ident'>Point</span>) <span class='op'>-&gt;</span> <span class='ident'>Point</span> {
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>to_first_bz</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>p</span>: <span class='kw-2'>&amp;</span><span class='ident'>Vec2</span>) <span class='op'>-&gt;</span> <span class='ident'>Vec2</span> {
 
         <span class='kw'>let</span> <span class='ident'>pv</span> <span class='op'>=</span> <span class='op'>*</span><span class='ident'>p</span> <span class='op'>-</span> <span class='self'>self</span>.<span class='ident'>a</span>;
 
@@ -255,17 +255,17 @@
     <span class='doccomment'>/// Calculates maximum value of momentum in direction $\theta$ in first brillouin zone</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>pmax</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>theta</span>: <span class='ident'>f64</span>) <span class='op'>-&gt;</span> <span class='ident'>f64</span> {
 
-        <span class='kw'>let</span> <span class='ident'>oa</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>a</span>.<span class='ident'>position</span>();
-        <span class='kw'>let</span> <span class='ident'>ob</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>b</span>.<span class='ident'>position</span>();
-        <span class='kw'>let</span> <span class='ident'>oc</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>c</span>.<span class='ident'>position</span>();
-        <span class='kw'>let</span> <span class='ident'>od</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>d</span>.<span class='ident'>position</span>();
+        <span class='kw'>let</span> <span class='ident'>oa</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>a</span>;
+        <span class='kw'>let</span> <span class='ident'>ob</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>b</span>;
+        <span class='kw'>let</span> <span class='ident'>oc</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>c</span>;
+        <span class='kw'>let</span> <span class='ident'>od</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>d</span>;
         <span class='kw'>let</span> <span class='ident'>l</span> <span class='op'>=</span> <span class='ident'>Vec2</span>::<span class='ident'>from_polar</span>(<span class='number'>1.0</span>, <span class='ident'>theta</span>);
 
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>res</span> <span class='op'>=</span> <span class='op'>-</span><span class='number'>1.0</span>;
 
         <span class='kw'>let</span> <span class='ident'>vs</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[<span class='ident'>oa</span>, <span class='ident'>ob</span>, <span class='ident'>oc</span>, <span class='ident'>od</span>, <span class='ident'>oa</span>];
         <span class='kw'>for</span> <span class='ident'>i</span> <span class='kw'>in</span> <span class='number'>0</span>..<span class='number'>4</span> {
-            <span class='kw'>let</span> <span class='ident'>p</span> <span class='op'>=</span> <span class='ident'>vs</span>[<span class='ident'>i</span>].<span class='ident'>cross</span>(<span class='ident'>vs</span>[<span class='ident'>i</span> <span class='op'>+</span> <span class='number'>1</span>]) <span class='op'>/</span> <span class='ident'>l</span>.<span class='ident'>cross</span>(<span class='ident'>vs</span>[<span class='ident'>i</span> <span class='op'>+</span> <span class='number'>1</span>] <span class='op'>-</span> <span class='ident'>vs</span>[<span class='ident'>i</span>]);
+            <span class='kw'>let</span> <span class='ident'>p</span> <span class='op'>=</span> <span class='ident'>vs</span>[<span class='ident'>i</span>].<span class='ident'>area</span>(<span class='ident'>vs</span>[<span class='ident'>i</span> <span class='op'>+</span> <span class='number'>1</span>]) <span class='op'>/</span> <span class='ident'>l</span>.<span class='ident'>area</span>(<span class='ident'>vs</span>[<span class='ident'>i</span> <span class='op'>+</span> <span class='number'>1</span>] <span class='op'>-</span> <span class='ident'>vs</span>[<span class='ident'>i</span>]);
 
             <span class='kw'>if</span> <span class='ident'>p</span> <span class='op'>&lt;</span> <span class='number'>0.0</span> {
                 <span class='kw'>continue</span>;
@@ -288,17 +288,17 @@
 
 <span class='attribute'>#[<span class='ident'>test</span>]</span>
 <span class='kw'>fn</span> <span class='ident'>test_pmax</span>() {
-    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>bz</span> <span class='op'>=</span> <span class='ident'>BrillouinZone</span>::<span class='ident'>new</span>(<span class='ident'>Point</span>::<span class='ident'>new</span>(<span class='op'>-</span><span class='number'>4.0</span>, <span class='op'>-</span><span class='number'>3.0</span>),
-                                    <span class='ident'>Point</span>::<span class='ident'>new</span>(<span class='number'>4.0</span>, <span class='op'>-</span><span class='number'>3.0</span>),
-                                    <span class='ident'>Point</span>::<span class='ident'>new</span>(<span class='op'>-</span><span class='number'>4.0</span>, <span class='number'>3.0</span>));
+    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>bz</span> <span class='op'>=</span> <span class='ident'>BrillouinZone</span>::<span class='ident'>new</span>(<span class='ident'>Vec2</span>::<span class='ident'>new</span>(<span class='op'>-</span><span class='number'>4.0</span>, <span class='op'>-</span><span class='number'>3.0</span>),
+                                    <span class='ident'>Vec2</span>::<span class='ident'>new</span>(<span class='number'>4.0</span>, <span class='op'>-</span><span class='number'>3.0</span>),
+                                    <span class='ident'>Vec2</span>::<span class='ident'>new</span>(<span class='op'>-</span><span class='number'>4.0</span>, <span class='number'>3.0</span>));
     <span class='macro'>assert_delta</span><span class='macro'>!</span>(<span class='ident'>bz</span>.<span class='ident'>pmax</span>(<span class='number'>0.0</span>), <span class='number'>4.0</span>, <span class='number'>1e-10</span>);
     <span class='macro'>assert_delta</span><span class='macro'>!</span>(<span class='ident'>bz</span>.<span class='ident'>pmax</span>((<span class='number'>0.75f64</span>).<span class='ident'>atan</span>()), <span class='number'>5.0</span>, <span class='number'>1e-10</span>);
     <span class='macro'>assert_delta</span><span class='macro'>!</span>(<span class='ident'>bz</span>.<span class='ident'>pmax</span>((<span class='number'>0.5f64</span>).<span class='ident'>atan</span>()), <span class='number'>20f64</span>.<span class='ident'>sqrt</span>(), <span class='number'>1e-10</span>);
     <span class='macro'>assert_delta</span><span class='macro'>!</span>(<span class='ident'>bz</span>.<span class='ident'>pmax</span>((<span class='op'>-</span><span class='number'>0.75f64</span>).<span class='ident'>atan</span>()), <span class='number'>5.0</span>, <span class='number'>1e-10</span>);
 
-    <span class='ident'>bz</span> <span class='op'>=</span> <span class='ident'>BrillouinZone</span>::<span class='ident'>new</span>(<span class='ident'>Point</span>::<span class='ident'>new</span>(<span class='op'>-</span><span class='number'>4.0</span>, <span class='op'>-</span><span class='number'>3.0</span>),
-                            <span class='ident'>Point</span>::<span class='ident'>new</span>(<span class='number'>0.0</span>, <span class='op'>-</span><span class='number'>3.0</span>),
-                            <span class='ident'>Point</span>::<span class='ident'>new</span>(<span class='number'>0.0</span>, <span class='number'>3.0</span>));
+    <span class='ident'>bz</span> <span class='op'>=</span> <span class='ident'>BrillouinZone</span>::<span class='ident'>new</span>(<span class='ident'>Vec2</span>::<span class='ident'>new</span>(<span class='op'>-</span><span class='number'>4.0</span>, <span class='op'>-</span><span class='number'>3.0</span>),
+                            <span class='ident'>Vec2</span>::<span class='ident'>new</span>(<span class='number'>0.0</span>, <span class='op'>-</span><span class='number'>3.0</span>),
+                            <span class='ident'>Vec2</span>::<span class='ident'>new</span>(<span class='number'>0.0</span>, <span class='number'>3.0</span>));
     <span class='macro'>assert_delta</span><span class='macro'>!</span>(<span class='ident'>bz</span>.<span class='ident'>pmax</span>(<span class='number'>0.0</span>), <span class='number'>2.0</span>, <span class='number'>1e-10</span>);
     <span class='macro'>assert_delta</span><span class='macro'>!</span>(<span class='ident'>bz</span>.<span class='ident'>pmax</span>((<span class='number'>0.75f64</span>).<span class='ident'>atan</span>()), <span class='number'>5.0</span>, <span class='number'>1e-10</span>);
     <span class='macro'>assert_delta</span><span class='macro'>!</span>(<span class='ident'>bz</span>.<span class='ident'>pmax</span>((<span class='number'>0.5f64</span>).<span class='ident'>atan</span>()), <span class='number'>11.25f64</span>.<span class='ident'>sqrt</span>(), <span class='number'>1e-10</span>);
@@ -307,19 +307,19 @@
 
 <span class='attribute'>#[<span class='ident'>test</span>]</span>
 <span class='kw'>fn</span> <span class='ident'>test_to_first_bz</span>() {
-    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>bz</span> <span class='op'>=</span> <span class='ident'>BrillouinZone</span>::<span class='ident'>new</span>(<span class='ident'>Point</span>::<span class='ident'>new</span>(<span class='op'>-</span><span class='number'>4.0</span>, <span class='op'>-</span><span class='number'>3.0</span>),
-                                    <span class='ident'>Point</span>::<span class='ident'>new</span>(<span class='number'>4.0</span>, <span class='op'>-</span><span class='number'>3.0</span>),
-                                    <span class='ident'>Point</span>::<span class='ident'>new</span>(<span class='op'>-</span><span class='number'>4.0</span>, <span class='number'>3.0</span>));
-    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>bz</span>.<span class='ident'>to_first_bz</span>(<span class='kw-2'>&amp;</span><span class='ident'>Point</span>::<span class='ident'>new</span>(<span class='number'>5.0</span>, <span class='number'>3.0</span>)),
-               <span class='ident'>Point</span>::<span class='ident'>new</span>(<span class='op'>-</span><span class='number'>3.0</span>, <span class='op'>-</span><span class='number'>3.0</span>));
-    <span class='macro'>assert</span><span class='macro'>!</span>((<span class='ident'>bz</span>.<span class='ident'>to_first_bz</span>(<span class='kw-2'>&amp;</span><span class='ident'>Point</span>::<span class='ident'>new</span>(<span class='number'>15.3</span>, <span class='op'>-</span><span class='number'>23.7</span>)) <span class='op'>-</span> <span class='ident'>Point</span>::<span class='ident'>new</span>(<span class='op'>-</span><span class='number'>0.7</span>, <span class='number'>0.3</span>)).<span class='ident'>len</span>() <span class='op'>&lt;</span> <span class='number'>1e-10</span>);
+    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>bz</span> <span class='op'>=</span> <span class='ident'>BrillouinZone</span>::<span class='ident'>new</span>(<span class='ident'>Vec2</span>::<span class='ident'>new</span>(<span class='op'>-</span><span class='number'>4.0</span>, <span class='op'>-</span><span class='number'>3.0</span>),
+                                    <span class='ident'>Vec2</span>::<span class='ident'>new</span>(<span class='number'>4.0</span>, <span class='op'>-</span><span class='number'>3.0</span>),
+                                    <span class='ident'>Vec2</span>::<span class='ident'>new</span>(<span class='op'>-</span><span class='number'>4.0</span>, <span class='number'>3.0</span>));
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>bz</span>.<span class='ident'>to_first_bz</span>(<span class='kw-2'>&amp;</span><span class='ident'>Vec2</span>::<span class='ident'>new</span>(<span class='number'>5.0</span>, <span class='number'>3.0</span>)),
+               <span class='ident'>Vec2</span>::<span class='ident'>new</span>(<span class='op'>-</span><span class='number'>3.0</span>, <span class='op'>-</span><span class='number'>3.0</span>));
+    <span class='macro'>assert</span><span class='macro'>!</span>((<span class='ident'>bz</span>.<span class='ident'>to_first_bz</span>(<span class='kw-2'>&amp;</span><span class='ident'>Vec2</span>::<span class='ident'>new</span>(<span class='number'>15.3</span>, <span class='op'>-</span><span class='number'>23.7</span>)) <span class='op'>-</span> <span class='ident'>Vec2</span>::<span class='ident'>new</span>(<span class='op'>-</span><span class='number'>0.7</span>, <span class='number'>0.3</span>)).<span class='ident'>len</span>() <span class='op'>&lt;</span> <span class='number'>1e-10</span>);
 
-    <span class='ident'>bz</span> <span class='op'>=</span> <span class='ident'>BrillouinZone</span>::<span class='ident'>new</span>(<span class='ident'>Point</span>::<span class='ident'>new</span>(<span class='op'>-</span><span class='number'>4.0</span>, <span class='op'>-</span><span class='number'>3.0</span>),
-                            <span class='ident'>Point</span>::<span class='ident'>new</span>(<span class='number'>0.0</span>, <span class='op'>-</span><span class='number'>3.0</span>),
-                            <span class='ident'>Point</span>::<span class='ident'>new</span>(<span class='number'>0.0</span>, <span class='number'>3.0</span>));
-    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>bz</span>.<span class='ident'>to_first_bz</span>(<span class='kw-2'>&amp;</span><span class='ident'>Point</span>::<span class='ident'>new</span>(<span class='number'>5.0</span>, <span class='number'>3.0</span>)),
-               <span class='ident'>Point</span>::<span class='ident'>new</span>(<span class='op'>-</span><span class='number'>3.0</span>, <span class='op'>-</span><span class='number'>3.0</span>));
-    <span class='macro'>assert</span><span class='macro'>!</span>((<span class='ident'>bz</span>.<span class='ident'>to_first_bz</span>(<span class='kw-2'>&amp;</span><span class='ident'>Point</span>::<span class='ident'>new</span>(<span class='number'>15.3</span>, <span class='op'>-</span><span class='number'>23.7</span>)) <span class='op'>-</span> <span class='ident'>Point</span>::<span class='ident'>new</span>(<span class='op'>-</span><span class='number'>0.7</span>, <span class='number'>0.3</span>)).<span class='ident'>len</span>() <span class='op'>&lt;</span> <span class='number'>1e-10</span>);
+    <span class='ident'>bz</span> <span class='op'>=</span> <span class='ident'>BrillouinZone</span>::<span class='ident'>new</span>(<span class='ident'>Vec2</span>::<span class='ident'>new</span>(<span class='op'>-</span><span class='number'>4.0</span>, <span class='op'>-</span><span class='number'>3.0</span>),
+                            <span class='ident'>Vec2</span>::<span class='ident'>new</span>(<span class='number'>0.0</span>, <span class='op'>-</span><span class='number'>3.0</span>),
+                            <span class='ident'>Vec2</span>::<span class='ident'>new</span>(<span class='number'>0.0</span>, <span class='number'>3.0</span>));
+    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>bz</span>.<span class='ident'>to_first_bz</span>(<span class='kw-2'>&amp;</span><span class='ident'>Vec2</span>::<span class='ident'>new</span>(<span class='number'>5.0</span>, <span class='number'>3.0</span>)),
+               <span class='ident'>Vec2</span>::<span class='ident'>new</span>(<span class='op'>-</span><span class='number'>3.0</span>, <span class='op'>-</span><span class='number'>3.0</span>));
+    <span class='macro'>assert</span><span class='macro'>!</span>((<span class='ident'>bz</span>.<span class='ident'>to_first_bz</span>(<span class='kw-2'>&amp;</span><span class='ident'>Vec2</span>::<span class='ident'>new</span>(<span class='number'>15.3</span>, <span class='op'>-</span><span class='number'>23.7</span>)) <span class='op'>-</span> <span class='ident'>Vec2</span>::<span class='ident'>new</span>(<span class='op'>-</span><span class='number'>0.7</span>, <span class='number'>0.3</span>)).<span class='ident'>len</span>() <span class='op'>&lt;</span> <span class='number'>1e-10</span>);
 }
 </pre>
 </section>
