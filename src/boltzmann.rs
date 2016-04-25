@@ -2,7 +2,7 @@
 use std::f64::consts::PI;
 use std::cmp::PartialOrd;
 use material::Material;
-use linal::Point;
+use linal::Vec2;
 use rng::Rng;
 
 fn binary_search<T: PartialOrd>(sorted_array: &[T], value: T) -> usize {
@@ -81,9 +81,9 @@ impl<'a, T: 'a + Material> BoltzmannDistrib<'a, T> {
         }
     }
     /// Make ensemble of n particles with Boltzmann distribution
-    pub fn make_dist(&self, seed: u32, n: usize) -> Vec<Point> {
+    pub fn make_dist(&self, seed: u32, n: usize) -> Vec<Vec2> {
         let mut rng = Rng::new(seed);
-        let mut points: Vec<Point> = Vec::with_capacity(n);
+        let mut points: Vec<Vec2> = Vec::with_capacity(n);
         for _ in 0..n {
             let theta = self.angle(rng.uniform());
             let p = self.momentum(theta, rng.uniform());
@@ -91,7 +91,7 @@ impl<'a, T: 'a + Material> BoltzmannDistrib<'a, T> {
         }
         points
     }
-    fn momentum(&self, theta: f64, r: f64) -> Point {
+    fn momentum(&self, theta: f64, r: f64) -> Vec2 {
         let n = 1000;
         let mut dist = vec![0.0; n];
         let pm = self.material.brillouin_zone().pmax(theta);
@@ -106,7 +106,7 @@ impl<'a, T: 'a + Material> BoltzmannDistrib<'a, T> {
         let i = binary_search(&dist, r);
         let w = (r - dist[i]) / (dist[i + 1] - dist[i]);
         let p = (i as f64 + w) / (n - 1) as f64 * pm;
-        Point::from_polar(p, theta)
+        Vec2::from_polar(p, theta)
     }
     fn angle(&self, r: f64) -> f64 {
         let i = binary_search(&self.angle_distrib, r);
@@ -118,28 +118,28 @@ impl<'a, T: 'a + Material> BoltzmannDistrib<'a, T> {
 #[test]
 fn test_boltzmann() {
     use material::BrillouinZone;
-    use linal::{Point, Vec2};
+    use linal::Vec2;
 
     struct M {
         brillouin_zone: BrillouinZone,
     };
     impl M {
         fn new() -> M {
-            let bz = BrillouinZone::new(Point::new(-1.0, -1.0),
-                                        Point::new(1.0, -1.0),
-                                        Point::new(-1.0, 1.0));
+            let bz = BrillouinZone::new(Vec2::new(-1.0, -1.0),
+                                        Vec2::new(1.0, -1.0),
+                                        Vec2::new(-1.0, 1.0));
             M { brillouin_zone: bz }
         }
     }
     impl Material for M {
-        fn energy(&self, p: &Point) -> f64 {
-            let q = p.position();
+        fn energy(&self, p: &Vec2) -> f64 {
+            let q = *p;
             q.dot(q) / 20.0
         }
-        fn energy_gradient(&self, _: &Point) -> Vec2 {
+        fn energy_gradient(&self, _: &Vec2) -> Vec2 {
             unimplemented!();
         }
-        fn velocity(&self, _: &Point) -> Vec2 {
+        fn velocity(&self, _: &Vec2) -> Vec2 {
             unimplemented!();
         }
         fn min_energy(&self) -> f64 {
@@ -148,7 +148,7 @@ fn test_boltzmann() {
         fn max_energy(&self) -> f64 {
             0.1
         }
-        fn momentums(&self, _: f64, _: f64) -> Vec<Point> {
+        fn momentums(&self, _: f64, _: f64) -> Vec<Vec2> {
             unimplemented!();
         }
         fn brillouin_zone(&self) -> &BrillouinZone {
@@ -157,10 +157,10 @@ fn test_boltzmann() {
         fn optical_energy(&self) -> f64 {
             unimplemented!();
         }
-        fn optical_scattering(&self, _: &Point) -> f64 {
+        fn optical_scattering(&self, _: &Vec2) -> f64 {
             unimplemented!();
         }
-        fn acoustic_scattering(&self, _: &Point) -> f64 {
+        fn acoustic_scattering(&self, _: &Vec2) -> f64 {
             unimplemented!();
         }
     }
@@ -184,6 +184,6 @@ fn test_boltzmann() {
     }
 
 
-    let ave = init_condition.iter().fold(Vec2::zero(), |acc, x| acc + x.position()) / 10_000f64;
+    let ave = init_condition.iter().fold(Vec2::zero(), |acc, &x| acc + x) / 10_000f64;
     assert!(ave.len() < 0.01);
 }

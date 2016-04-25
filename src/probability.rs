@@ -1,6 +1,6 @@
 //! Provides function for calculate probability of electron-phonon scattering
 use material::Material;
-use linal::Point;
+use linal::Vec2;
 
 /// Calculates $\int\limits\_{BZ} \delta(E(p)-E) d\^{2} p$
 pub fn probability<T: Material>(energy: f64, m: &T, error: f64) -> f64 {
@@ -16,7 +16,7 @@ pub fn probability<T: Material>(energy: f64, m: &T, error: f64) -> f64 {
         new = 0.0;
         let dtheta = 2.0 * PI / (n as f64);
 
-        let mut prev: Vec<Point> = m.momentums(energy, 0f64);
+        let mut prev: Vec<Vec2> = m.momentums(energy, 0f64);
 
         for i in 1..n + 1 {
             let theta = (i as f64) * dtheta;

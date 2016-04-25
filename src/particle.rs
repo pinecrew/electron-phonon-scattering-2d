@@ -2,11 +2,11 @@
 
 use material::Material;
 use fields::Fields;
-use linal::{Point, Vec2, Cross};
+use linal::Vec2;
 use rng::Rng;
 
-fn runge<F>(p: &Point, force: F, t: f64, dt: f64) -> Point
-    where F: Fn(&Point, f64) -> Vec2
+fn runge<F>(p: &Vec2, force: F, t: f64, dt: f64) -> Vec2
+    where F: Fn(&Vec2, f64) -> Vec2
 {
 
     let k1 = force(p, t);
@@ -20,45 +20,45 @@ fn runge<F>(p: &Point, force: F, t: f64, dt: f64) -> Point
 #[test]
 fn runge_circle() {
     use std::f64::consts::PI;
-    let f = |p: &Point, _: f64| p.position().cross(1.0);
+    let f = |p: &Vec2, _: f64| p.cross();
     let dt = 0.01;
-    let mut p = Point::new(1.0, 0.0);
+    let mut p = Vec2::new(1.0, 0.0);
     let mut t = 0.0;
     while t < PI {
         p = runge(&p, &f, t, dt);
         t += dt;
     }
     p = runge(&p, &f, t, PI - t);
-    assert!((p - Point::new(-1.0, 0.0)).len() < 1e-8);
+    assert!((p - Vec2::new(-1.0, 0.0)).len() < 1e-8);
 }
 
 #[test]
 fn runge_parabola() {
-    let f = |_: &Point, t: f64| Vec2::new(0.0, t);
+    let f = |_: &Vec2, t: f64| Vec2::new(0.0, t);
     let dt = 0.01;
-    let mut p = Point::new(1.0, 0.0);
+    let mut p = Vec2::new(1.0, 0.0);
     let mut t = 0.0;
     while t < 1.0 {
         p = runge(&p, &f, t, dt);
         t += dt;
     }
     p = runge(&p, &f, t, 1.0 - t);
-    assert!((p - Point::new(1.0, 0.5)).len() < 1e-8);
+    assert!((p - Vec2::new(1.0, 0.5)).len() < 1e-8);
 }
 
 #[test]
 fn runge_sin() {
     use std::f64::consts::PI;
-    let f = |_: &Point, t: f64| Vec2::new(0.0, t.sin());
+    let f = |_: &Vec2, t: f64| Vec2::new(0.0, t.sin());
     let dt = 0.01;
-    let mut p = Point::new(1.0, 0.0);
+    let mut p = Vec2::new(1.0, 0.0);
     let mut t = 0.0;
     while t < PI {
         p = runge(&p, &f, t, dt);
         t += dt;
     }
     p = runge(&p, &f, t, PI - t);
-    assert!((p - Point::new(1.0, 2.0)).len() < 1e-8);
+    assert!((p - Vec2::new(1.0, 2.0)).len() < 1e-8);
 }
 
 
@@ -90,13 +90,13 @@ impl Summary {
 }
 
 pub struct Particle<'a, T: 'a + Material> {
-    init_condition: Point,
+    init_condition: Vec2,
     seed: u32,
     m: &'a T,
 }
 
 impl<'a, T: 'a + Material> Particle<'a, T> {
-    pub fn new(m: &T, init_condition: Point, seed: u32) -> Particle<T> {
+    pub fn new(m: &T, init_condition: Vec2, seed: u32) -> Particle<T> {
         Particle {
             m: m,
             init_condition: init_condition,
@@ -117,12 +117,10 @@ impl<'a, T: 'a + Material> Particle<'a, T> {
         let mut n_opt = 0;
         let mut int_v_dt = Vec2::zero();
 
-        let force = |p: &Point, t: f64| -> Vec2 {
-            (f.e.0 + f.e.1 * (f.omega.1 * t).cos() + f.e.2 * (f.omega.2 * t + f.phi).cos() +
-            self.m
-                .velocity(p)
-                .cross(f.b.0 + f.b.1 * (f.omega.1 * t).cos() +
-                       f.b.2 * (f.omega.2 * t + f.phi).cos())) * (-1.0)
+        let force = |p: &Vec2, t: f64| -> Vec2 {
+            -(f.e.0 + f.e.1 * (f.omega.1 * t).cos() + f.e.2 * (f.omega.2 * t + f.phi).cos() +
+              self.m.velocity(p).cross() *
+              (f.b.0 + f.b.1 * (f.omega.1 * t).cos() + f.b.2 * (f.omega.2 * t + f.phi).cos()))
         };
 
         let mut r = -rng.uniform().ln();

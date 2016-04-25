@@ -4,4 +4,4 @@ version = "0.1.0"
 authors = ["Vova Abdrakhmanov <369565@gmail.com>", "Alexey Golubev <dr.freecx@gmail.com>"]
 
 [dependencies]
-linal = "0.1"
+linal = "0.2"
