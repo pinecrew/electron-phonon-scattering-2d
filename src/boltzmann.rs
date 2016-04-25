@@ -42,148 +42,49 @@ fn test_binsearch() {
 fn f<T: Material>(p: f64, theta: f64, temperature: f64, m: &T) -> f64 {
     (-m.energy_polar(p, theta) / temperature).exp() * p
 }
-/// Calculates anngle distribution:
-/// $$ g(\theta) = A\int\limits\_0^{p_{max}(\theta)}\exp\left[-\frac{\varepsilon(\vec{p}){T}\right]\cdot pdp $$
-fn calc_angle_distrib<T: Material>(temperature: f64, m: &T) -> Vec<f64> {
-    let n = 1000;
-    let mut angle_distrib: Vec<f64> = vec![0.0; n];
-    let angle_step = 2.0 * PI / n as f64;
-    for i in 0..n - 1 {
-        let theta = angle_step * i as f64;
-        let pm = m.brillouin_zone().pmax(theta);
-        let step = pm / (n - 1) as f64;
-        angle_distrib[i + 1] = angle_distrib[i];
-        for j in 0..n {
-            let p = step * j as f64;
-            angle_distrib[i + 1] += f(p, theta, temperature, m) * step * angle_step;
-        }
+
+fn integrate<F>(f: F, a: f64, b: f64, n: usize) -> (f64, Vec<f64>)
+    where F: Fn(f64) -> f64
+{
+    let mut result: Vec<f64> = vec![0f64; n];
+    let step = (b - a) / (n as f64 - 1.0);
+    for i in 1..n {
+        let x = a + step * (i as f64 - 0.5);
+        result[i] = result[i - 1] + step * f(x);
     }
-    for i in 0..n {
-        angle_distrib[i] /= angle_distrib[n - 1];
-    }
-    angle_distrib
+    (result[n - 1], result)
 }
 
+pub fn initial_condition<T: Material>(m: &T, temperature: f64, seed: u32, n: usize) -> Vec<Vec2> {
+    let mut rng = Rng::new(seed);
+    let mut points: Vec<Vec2> = Vec::with_capacity(n);
 
-pub struct BoltzmannDistrib<'a, T: 'a + Material> {
-    temperature: f64,
-    angle_distrib: Vec<f64>,
-    material: &'a T,
-}
-
-impl<'a, T: 'a + Material> BoltzmannDistrib<'a, T> {
-    /// Create new BoltzmannDistrib object for given material and temperature
-    pub fn new(temperature: f64, m: &T) -> BoltzmannDistrib<T> {
-        BoltzmannDistrib {
-            temperature: temperature,
-            angle_distrib: calc_angle_distrib(temperature, m),
-            material: m,
-        }
-    }
-    /// Make ensemble of n particles with Boltzmann distribution
-    pub fn make_dist(&self, seed: u32, n: usize) -> Vec<Vec2> {
-        let mut rng = Rng::new(seed);
-        let mut points: Vec<Vec2> = Vec::with_capacity(n);
-        for _ in 0..n {
-            let theta = self.angle(rng.uniform());
-            let p = self.momentum(theta, rng.uniform());
-            points.push(p);
-        }
-        points
-    }
-    fn momentum(&self, theta: f64, r: f64) -> Vec2 {
-        let n = 1000;
-        let mut dist = vec![0.0; n];
-        let pm = self.material.brillouin_zone().pmax(theta);
-        let step = pm / (n - 1) as f64;
-        for i in 0..n - 1 {
-            let p = step * i as f64;
-            dist[i + 1] = dist[i] + f(p, theta, self.temperature, self.material) * step;
-        }
-        for i in 0..n {
-            dist[i] /= dist[n - 1];
-        }
-        let i = binary_search(&dist, r);
-        let w = (r - dist[i]) / (dist[i + 1] - dist[i]);
-        let p = (i as f64 + w) / (n - 1) as f64 * pm;
-        Vec2::from_polar(p, theta)
-    }
-    fn angle(&self, r: f64) -> f64 {
-        let i = binary_search(&self.angle_distrib, r);
-        let w = (r - self.angle_distrib[i]) / (self.angle_distrib[i + 1] - self.angle_distrib[i]);
-        2.0 * PI * (i as f64 + w)
-    }
-}
-
-#[test]
-fn test_boltzmann() {
-    use material::BrillouinZone;
-    use linal::Vec2;
-
-    struct M {
-        brillouin_zone: BrillouinZone,
+    let angle_dist_fun = |theta: f64| {
+        let dist = |p: f64| f(p, theta, temperature, m);
+        let (int, _) = integrate(dist, 0f64, m.brillouin_zone().pmax(theta), 1000);
+        int
     };
-    impl M {
-        fn new() -> M {
-            let bz = BrillouinZone::new(Vec2::new(-1.0, -1.0),
-                                        Vec2::new(1.0, -1.0),
-                                        Vec2::new(-1.0, 1.0));
-            M { brillouin_zone: bz }
-        }
-    }
-    impl Material for M {
-        fn energy(&self, p: &Vec2) -> f64 {
-            let q = *p;
-            q.dot(q) / 20.0
-        }
-        fn energy_gradient(&self, _: &Vec2) -> Vec2 {
-            unimplemented!();
-        }
-        fn velocity(&self, _: &Vec2) -> Vec2 {
-            unimplemented!();
-        }
-        fn min_energy(&self) -> f64 {
-            0.0
-        }
-        fn max_energy(&self) -> f64 {
-            0.1
-        }
-        fn momentums(&self, _: f64, _: f64) -> Vec<Vec2> {
-            unimplemented!();
-        }
-        fn brillouin_zone(&self) -> &BrillouinZone {
-            &(self.brillouin_zone)
-        }
-        fn optical_energy(&self) -> f64 {
-            unimplemented!();
-        }
-        fn optical_scattering(&self, _: &Vec2) -> f64 {
-            unimplemented!();
-        }
-        fn acoustic_scattering(&self, _: &Vec2) -> f64 {
-            unimplemented!();
-        }
-    }
-    let ref m = M::new();
-    let temperature = 7e-3;
-    let bd = BoltzmannDistrib::new(temperature, m);
-    let init_condition = bd.make_dist(3_347_183_342u32, 10_000);
-    let es: Vec<f64> = init_condition.iter().map(|x| m.energy(x)).collect();
-    let intervals = 100;
-    let mut dist = vec![0; intervals];
-    let width = (m.max_energy() - m.min_energy()) / intervals as f64;
-    for e in es {
-        let p = ((e - m.min_energy()) / width).floor() as usize;
-        dist[p] += 1;
-    }
-    let x = width / temperature;
-    for i in 0..intervals {
-        let obtained = dist[i] as f64 / 10_000f64;
-        let prob = x * (-(i as f64) * x).exp();
-        assert!((obtained - prob).abs() < 3.0 * ((1.0 - prob) * prob / 10_000f64).sqrt());
-    }
+    
+    let (int, angle_dist) = integrate(angle_dist_fun, 0f64, 2.0 * PI, 1000);
 
+    let angle = |x: f64| {
+        let i = binary_search(&angle_dist, x * int);
+        let w = (x * int - angle_dist[i]) / (angle_dist[i+1] - angle_dist[i]);
+        2.0 * PI / (angle_dist.len() as f64 - 1.0) * (i as f64 + w)
+    };
 
-    let ave = init_condition.iter().fold(Vec2::zero(), |acc, &x| acc + x) / 10_000f64;
-    assert!(ave.len() < 0.01);
+    let momentum = |theta: f64, x: f64| {
+        let dist = |p: f64| f(p, theta, temperature, m);
+        let (int, momentum_dist) = integrate(dist, 0f64, m.brillouin_zone().pmax(theta), 1000);
+        let i = binary_search(&momentum_dist, x * int);
+        let w = (x * int - momentum_dist[i]) / (momentum_dist[i+1] - momentum_dist[i]);
+        m.brillouin_zone().pmax(theta) / (momentum_dist.len() as f64 - 1.0) * (i as f64 + w)
+    };
+
+    for _ in 0..n {
+        let theta = angle(rng.uniform());
+        let p = Vec2::from_polar(momentum(theta, rng.uniform()), theta);
+        points.push(p);
+    }
+    points
 }

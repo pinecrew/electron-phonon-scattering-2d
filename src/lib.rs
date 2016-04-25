@@ -14,7 +14,7 @@ pub use fields::Fields;
 pub use probability::probability;
 use particle::Particle;
 use rng::Rng;
-use boltzmann::BoltzmannDistrib;
+use boltzmann::initial_condition;
 
 pub fn create_ensemble<T: Material>(n: usize,
                                     m: &T,
@@ -22,8 +22,7 @@ pub fn create_ensemble<T: Material>(n: usize,
                                     seed: u32)
                                     -> Vec<Particle<T>> {
     let mut rng = Rng::new(seed);
-    let bd = BoltzmannDistrib::new(temperature, m);
-    let init_condition = bd.make_dist(rng.rand(), n);
+    let init_condition = initial_condition(m, temperature, rng.rand(), n);
 
     let mut ensemble = Vec::new();
 
@@ -110,7 +109,7 @@ fn zero_field_test() {
     let ref m = M::new();
     let temperature = 7e-3;
     let ref fields = Fields::zero();
-    let n = 49u32;
+    let n = 36u32;
     let particles = 500usize;
     let mut average = Vec2::zero();
     let mut average_std = Vec2::zero();
@@ -131,6 +130,6 @@ fn zero_field_test() {
     average = average / (n as f64);
     average_std = average_std / (n as f64) / (n as f64).sqrt();
 
-    assert!(average.x.abs() < average_std.x);
-    assert!(average.y.abs() < average_std.y);
+    assert!(average.x.abs() < average_std.x, format!("{} > {}", average.x.abs(), average_std.x));
+    assert!(average.y.abs() < average_std.y, format!("{} > {}", average.y.abs(), average_std.y));
 }
