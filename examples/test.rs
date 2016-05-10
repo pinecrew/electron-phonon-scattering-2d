@@ -1,6 +1,5 @@
 extern crate scattering;
 extern crate linal;
-// extern crate time;
 
 use scattering::{Fields, Stats, create_ensemble};
 use scattering::material::{Material, BrillouinZone};
@@ -75,7 +74,7 @@ impl Material for M {
     }
 }
 
-fn main() {
+fn main() { 
     let ref m = M::new();
     let temperature = 7e-3;
     let ref fields = Fields::zero();
@@ -85,7 +84,7 @@ fn main() {
     let mut average_std = Vec2::zero();
 
     for _ in 0..n {
-        let ensemble = create_ensemble(particles, m, temperature, 1238263);
+        let ensemble = create_ensemble(particles, m, temperature);
         for i in &ensemble {
             println!("{} {}", i.init_condition.x, i.init_condition.y);
         }
