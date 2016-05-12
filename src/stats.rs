@@ -83,6 +83,16 @@ impl MeanStd for [Vec2] {
     }
 }
 
+impl MeanStd for [f64] {
+    type Output = f64;
+
+    fn mean_std(&self) -> Self::Output {
+        let mean = self.mean();
+        let sum = self.iter().fold(0f64, |acc, &x| acc + (x - mean).powi(2));
+        sum.sqrt() / self.len() as f64
+    }
+}
+
 #[test]
 fn test_mean_std() {
     let data_vec2 = vec![Vec2::new(1.0, 2.0), Vec2::new(-3.0, 4.0)];
