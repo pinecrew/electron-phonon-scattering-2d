@@ -5,3 +5,7 @@ authors = ["Vova Abdrakhmanov <369565@gmail.com>", "Alexey Golubev <dr.freecx@gm
 
 [dependencies]
 linal = "0.2"
+time = "0.1"
+
+[[example]]
+name = "test"

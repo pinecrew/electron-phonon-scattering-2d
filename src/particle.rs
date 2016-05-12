@@ -90,7 +90,7 @@ impl Summary {
 }
 
 pub struct Particle<'a, T: 'a + Material> {
-    init_condition: Vec2,
+    pub init_condition: Vec2,
     seed: u32,
     m: &'a T,
 }
