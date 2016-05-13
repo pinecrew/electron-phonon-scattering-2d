@@ -17,11 +17,11 @@ pub fn initial_condition<T: Material>(m: &T, temperature: f64, n: usize) -> Vec<
     while k > 0 {
         let p = bz.a + a * rng.uniform() + b * rng.uniform();
 
-        if (rng.uniform() < ((m.min_energy() - m.energy(&p)) / temperature).exp()) {
+        if (rng.uniform() < ((m.min_energy() - m.energy(p)) / temperature).exp()) {
             points.push(p);
             k -= 1;
         }
-    }
+    }   
     points
 }
 
@@ -51,15 +51,15 @@ mod tests {
     }
 
     impl Material for Parabolic {
-        fn energy(&self, p: &Vec2) -> f64 {
-            p.dot(*p) / 2.0
+        fn energy(&self, p: Vec2) -> f64 {
+            p.dot(p) / 2.0
         }
         /// Gradient of energy in momentum space
-        fn energy_gradient(&self, p: &Vec2) -> Vec2 {
+        fn energy_gradient(&self, p: Vec2) -> Vec2 {
             unimplemented!();
         }
 
-        fn velocity(&self, p: &Vec2) -> Vec2 {
+        fn velocity(&self, p: Vec2) -> Vec2 {
             unimplemented!();
         }
         /// Minimum of energy in brillouin zone
@@ -83,34 +83,38 @@ mod tests {
             unimplemented!();
         }
         /// optical phonon scattering probability
-        fn optical_scattering(&self, p: &Vec2) -> f64 {
+        fn optical_scattering(&self, p: Vec2) -> f64 {
             unimplemented!();
         }
         /// acoustic phonon scattering probability
-        fn acoustic_scattering(&self, p: &Vec2) -> f64 {
+        fn acoustic_scattering(&self, p: Vec2) -> f64 {
             unimplemented!();
         }
     }
 
+    fn is_ok(real: Vec2, expectation: Vec2, delta: Vec2) -> bool {
+        (real.x - expectation.x).abs() < delta.x && (real.y - expectation.y).abs() < delta.y
+    }
 
     #[test]
     fn test_average_momentum() {
         let ref m = Parabolic::new();
         let temperature = 0.05;
-        let ic = initial_condition(m, temperature, 100000usize);
+        let ic = initial_condition(m, temperature, 1000000usize);
         let average = ic.mean();
         let std = ic.mean_std();
-        assert!(average.len() < std.len(), format!("{} > {}", average.len(), std.len()));
+        assert!(average.x.abs() < std.x, format!("{} > {}", average.x.abs(), std.x));
+        assert!(average.y.abs() < std.y, format!("{} > {}", average.y.abs(), std.y));
     }
 
     #[test]
     fn test_average_energy() {
         let ref m = Parabolic::new();
         let temperature = 0.05;
-        let ic = initial_condition(m, temperature, 100000usize);
-        let enegies: Vec<f64> = ic.iter().map(|x| m.energy(x)).collect();
-        let average = enegies.mean();
-        let std = enegies.mean_std();
-        assert!((average - temperature).abs() < std, format!("{} > {}", (average - temperature).abs(), std));
+        let ic = initial_condition(m, temperature, 1000000usize);
+        let energies: Vec<f64> = ic.iter().map(|&x| m.energy(x)).collect();
+        let average = energies.mean();
+        let std = energies.mean_std();
+        assert!((average - temperature).abs() < std * 2.0, format!("{} > {}", (average - temperature).abs(), 2.0*std));
     }
 }

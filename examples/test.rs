@@ -10,6 +10,7 @@ struct M {
     brillouin_zone: BrillouinZone,
     mass: f64,
 }
+
 impl M {
     fn new() -> M {
         let bz = BrillouinZone::new(Vec2::new(-1.0, -1.0),
@@ -21,15 +22,15 @@ impl M {
         }
     }
 }
+
 impl Material for M {
-    fn energy(&self, p: &Vec2) -> f64 {
-        let q = *p;
-        q.dot(q) / 2.0 / self.mass
+    fn energy(&self, p: Vec2) -> f64 {
+        p.dot(p) / 2.0 / self.mass
     }
-    fn energy_gradient(&self, p: &Vec2) -> Vec2 {
-        *p / self.mass
+    fn energy_gradient(&self, p: Vec2) -> Vec2 {
+        p / self.mass
     }
-    fn velocity(&self, p: &Vec2) -> Vec2 {
+    fn velocity(&self, p: Vec2) -> Vec2 {
         self.energy_gradient(p)
     }
     fn min_energy(&self) -> f64 {
@@ -53,7 +54,7 @@ impl Material for M {
     fn optical_energy(&self) -> f64 {
         5e-2
     }
-    fn optical_scattering(&self, p: &Vec2) -> f64 {
+    fn optical_scattering(&self, p: Vec2) -> f64 {
         let mut res = 2.0 * std::f64::consts::PI;
         if self.energy(p) < self.optical_energy() {
             return 0.0;
@@ -64,7 +65,7 @@ impl Material for M {
         }
         1.7e-2 * self.mass * res
     }
-    fn acoustic_scattering(&self, p: &Vec2) -> f64 {
+    fn acoustic_scattering(&self, p: Vec2) -> f64 {
         let mut res = 2.0 * std::f64::consts::PI;
         let pl = p.len();
         if pl > 1.0 {

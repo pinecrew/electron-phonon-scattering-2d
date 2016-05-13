@@ -23,7 +23,7 @@ pub fn probability<T: Material>(energy: f64, m: &T, error: f64) -> f64 {
             let curr = m.momentums(energy, theta);
             let l = min(curr.len(), prev.len());
             for j in 0..l {
-                new += (curr[j] - prev[j]).len() / m.energy_gradient(&curr[j]).len();
+                new += (curr[j] - prev[j]).len() / m.energy_gradient(curr[j]).len();
             }
 
             // find endpoints
@@ -38,7 +38,7 @@ pub fn probability<T: Material>(energy: f64, m: &T, error: f64) -> f64 {
                     }
                 }
                 new += (curr[i] - m.momentums(energy, theta)[i]).len() /
-                       m.energy_gradient(&curr[i]).len();
+                       m.energy_gradient(curr[i]).len();
             }
 
 
@@ -53,7 +53,7 @@ pub fn probability<T: Material>(energy: f64, m: &T, error: f64) -> f64 {
                     }
                 }
                 new += (prev[i] - m.momentums(energy, theta)[i]).len() /
-                       m.energy_gradient(&prev[i]).len();
+                       m.energy_gradient(prev[i]).len();
             }
 
             prev = curr;

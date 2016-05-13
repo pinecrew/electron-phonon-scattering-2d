@@ -5,59 +5,59 @@ use fields::Fields;
 use linal::Vec2;
 use rng::Rng;
 
-fn runge<F>(p: &Vec2, force: F, t: f64, dt: f64) -> Vec2
-    where F: Fn(&Vec2, f64) -> Vec2
+fn runge<F>(p: Vec2, force: F, t: f64, dt: f64) -> Vec2
+    where F: Fn(Vec2, f64) -> Vec2
 {
 
     let k1 = force(p, t);
-    let k2 = force(&(*p + k1 * dt / 2.0), t + dt / 2.0);
-    let k3 = force(&(*p + k2 * dt / 2.0), t + dt / 2.0);
-    let k4 = force(&(*p + k3 * dt), t + dt);
+    let k2 = force(p + k1 * dt / 2.0, t + dt / 2.0);
+    let k3 = force(p + k2 * dt / 2.0, t + dt / 2.0);
+    let k4 = force(p + k3 * dt, t + dt);
 
-    *p + (k1 + k2 * 2.0 + k3 * 2.0 + k4) * dt / 6.0
+    p + (k1 + k2 * 2.0 + k3 * 2.0 + k4) * dt / 6.0
 }
 
 #[test]
 fn runge_circle() {
     use std::f64::consts::PI;
-    let f = |p: &Vec2, _: f64| p.cross();
+    let f = |p: Vec2, _: f64| p.cross();
     let dt = 0.01;
     let mut p = Vec2::new(1.0, 0.0);
     let mut t = 0.0;
     while t < PI {
-        p = runge(&p, &f, t, dt);
+        p = runge(p, &f, t, dt);
         t += dt;
     }
-    p = runge(&p, &f, t, PI - t);
+    p = runge(p, &f, t, PI - t);
     assert!((p - Vec2::new(-1.0, 0.0)).len() < 1e-8);
 }
 
 #[test]
 fn runge_parabola() {
-    let f = |_: &Vec2, t: f64| Vec2::new(0.0, t);
+    let f = |_: Vec2, t: f64| Vec2::new(0.0, t);
     let dt = 0.01;
     let mut p = Vec2::new(1.0, 0.0);
     let mut t = 0.0;
     while t < 1.0 {
-        p = runge(&p, &f, t, dt);
+        p = runge(p, &f, t, dt);
         t += dt;
     }
-    p = runge(&p, &f, t, 1.0 - t);
+    p = runge(p, &f, t, 1.0 - t);
     assert!((p - Vec2::new(1.0, 0.5)).len() < 1e-8);
 }
 
 #[test]
 fn runge_sin() {
     use std::f64::consts::PI;
-    let f = |_: &Vec2, t: f64| Vec2::new(0.0, t.sin());
+    let f = |_: Vec2, t: f64| Vec2::new(0.0, t.sin());
     let dt = 0.01;
     let mut p = Vec2::new(1.0, 0.0);
     let mut t = 0.0;
     while t < PI {
-        p = runge(&p, &f, t, dt);
+        p = runge(p, &f, t, dt);
         t += dt;
     }
-    p = runge(&p, &f, t, PI - t);
+    p = runge(p, &f, t, PI - t);
     assert!((p - Vec2::new(1.0, 2.0)).len() < 1e-8);
 }
 
@@ -117,7 +117,7 @@ impl<'a, T: 'a + Material> Particle<'a, T> {
         let mut n_opt = 0;
         let mut int_v_dt = Vec2::zero();
 
-        let force = |p: &Vec2, t: f64| -> Vec2 {
+        let force = |p: Vec2, t: f64| -> Vec2 {
             -(f.e.0 + f.e.1 * (f.omega.1 * t).cos() + f.e.2 * (f.omega.2 * t + f.phi).cos() +
               self.m.velocity(p).cross() *
               (f.b.0 + f.b.1 * (f.omega.1 * t).cos() + f.b.2 * (f.omega.2 * t + f.phi).cos()))
@@ -125,20 +125,20 @@ impl<'a, T: 'a + Material> Particle<'a, T> {
 
         let mut r = -rng.uniform().ln();
         while t < all_time {
-            let v = self.m.velocity(&p);
+            let v = self.m.velocity(p);
 
             int_v_dt = int_v_dt + v * dt;
 
-            p = runge(&p, &force, t, dt); // решаем уравнения движения
+            p = runge(p, &force, t, dt); // решаем уравнения движения
 
             // приводим импульс к зоне
-            p = self.m.brillouin_zone().to_first_bz(&p);
+            p = self.m.brillouin_zone().to_first_bz(p);
 
             t += dt;
 
-            let mut e = self.m.energy(&p);
-            let dwlo = self.m.optical_scattering(&p); // 0, если выпал из минизоны
-            let dwla = self.m.acoustic_scattering(&p);
+            let mut e = self.m.energy(p);
+            let dwlo = self.m.optical_scattering(p); // 0, если выпал из минизоны
+            let dwla = self.m.acoustic_scattering(p);
             wsum += (dwla + dwlo) * dt;
 
             if wsum > r {
