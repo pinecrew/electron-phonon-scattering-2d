@@ -2,15 +2,15 @@ use linal::{Vec2};
 
 pub trait Material {
     /// Energy spectrum of electrons
-    fn energy(&self, p: &Vec2) -> f64;
+    fn energy(&self, p: Vec2) -> f64;
     /// Energy spectrum in polar coordinates
     fn energy_polar(&self, p: f64, theta: f64) -> f64 {
-        self.energy(&Vec2::from_polar(p, theta))
+        self.energy(Vec2::from_polar(p, theta))
     }
     /// Gradient of energy in momentum space
-    fn energy_gradient(&self, p: &Vec2) -> Vec2;
+    fn energy_gradient(&self, p: Vec2) -> Vec2;
 
-    fn velocity(&self, p: &Vec2) -> Vec2;
+    fn velocity(&self, p: Vec2) -> Vec2;
     /// Minimum of energy in brillouin zone
     fn min_energy(&self) -> f64;
     /// Maximum of energy in brillouin zone
@@ -22,9 +22,9 @@ pub trait Material {
     /// optical phonon energy
     fn optical_energy(&self) -> f64;
     /// optical phonon scattering probability
-    fn optical_scattering(&self, p: &Vec2) -> f64;
+    fn optical_scattering(&self, p: Vec2) -> f64;
     /// acoustic phonon scattering probability
-    fn acoustic_scattering(&self, p: &Vec2) -> f64;
+    fn acoustic_scattering(&self, p: Vec2) -> f64;
 }
 
 #[derive(Clone)]
@@ -57,14 +57,14 @@ impl BrillouinZone {
     }
 
     /// Returns equivalent momentum in first brillouin zone
-    pub fn to_first_bz(&self, p: &Vec2) -> Vec2 {
+    pub fn to_first_bz(&self, p: Vec2) -> Vec2 {
 
-        let pv = *p - self.a;
+        let pv = p - self.a;
 
         let n1 = pv.dot(self.dual_basis.0).floor();
         let n2 = pv.dot(self.dual_basis.1).floor();
 
-        *p - self.basis.0 * n1 - self.basis.1 * n2
+        p - self.basis.0 * n1 - self.basis.1 * n2
     }
 
     /// Calculates maximum value of momentum in direction $\theta$ in first brillouin zone
@@ -125,14 +125,14 @@ fn test_to_first_bz() {
     let mut bz = BrillouinZone::new(Vec2::new(-4.0, -3.0),
                                     Vec2::new(4.0, -3.0),
                                     Vec2::new(-4.0, 3.0));
-    assert_eq!(bz.to_first_bz(&Vec2::new(5.0, 3.0)),
+    assert_eq!(bz.to_first_bz(Vec2::new(5.0, 3.0)),
                Vec2::new(-3.0, -3.0));
-    assert!((bz.to_first_bz(&Vec2::new(15.3, -23.7)) - Vec2::new(-0.7, 0.3)).len() < 1e-10);
+    assert!((bz.to_first_bz(Vec2::new(15.3, -23.7)) - Vec2::new(-0.7, 0.3)).len() < 1e-10);
 
     bz = BrillouinZone::new(Vec2::new(-4.0, -3.0),
                             Vec2::new(0.0, -3.0),
                             Vec2::new(0.0, 3.0));
-    assert_eq!(bz.to_first_bz(&Vec2::new(5.0, 3.0)),
+    assert_eq!(bz.to_first_bz(Vec2::new(5.0, 3.0)),
                Vec2::new(-3.0, -3.0));
-    assert!((bz.to_first_bz(&Vec2::new(15.3, -23.7)) - Vec2::new(-0.7, 0.3)).len() < 1e-10);
+    assert!((bz.to_first_bz(Vec2::new(15.3, -23.7)) - Vec2::new(-0.7, 0.3)).len() < 1e-10);
 }
