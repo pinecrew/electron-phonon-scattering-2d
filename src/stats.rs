@@ -7,6 +7,7 @@ pub struct Stats {
     pub optical: f64,
     pub acoustic: f64,
     pub tau: f64,
+    pub energy: f64,
 }
 
 impl Stats {
@@ -18,6 +19,7 @@ impl Stats {
             optical: ensemble.iter().map(|x| x.optical).collect::<Vec<u32>>().mean(),
             acoustic: ensemble.iter().map(|x| x.acoustic).collect::<Vec<u32>>().mean(),
             tau: ensemble.iter().map(|x| x.tau).collect::<Vec<f64>>().mean(),
+            energy: ensemble.iter().map(|x| x.energy).collect::<Vec<f64>>().mean(),
         }
     }
 }
