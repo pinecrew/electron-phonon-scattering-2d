@@ -68,15 +68,17 @@ pub struct Summary {
     pub acoustic: u32,
     pub optical: u32,
     pub tau: f64,
+    pub energy: f64,
 }
 
 impl Summary {
-    pub fn new(v: Vec2, a: u32, o: u32, t: f64) -> Summary {
+    pub fn new(v: Vec2, a: u32, o: u32, t: f64, e: f64) -> Summary {
         Summary {
             average_speed: v,
             acoustic: a,
             optical: o,
             tau: t,
+            energy: e,
         }
     }
     pub fn empty() -> Summary {
@@ -85,6 +87,7 @@ impl Summary {
             acoustic: 0,
             optical: 0,
             tau: 0.0,
+            energy: 0.0,
         }
     }
 }
@@ -116,6 +119,7 @@ impl<'a, T: 'a + Material> Particle<'a, T> {
         let mut n_ac = 0;
         let mut n_opt = 0;
         let mut int_v_dt = Vec2::zero();
+        let mut int_e_dt: f64 = 0.0;
 
         let force = |p: Vec2, t: f64| -> Vec2 {
             -(f.e.0 + f.e.1 * (f.omega.1 * t).cos() + f.e.2 * (f.omega.2 * t + f.phi).cos() +
@@ -137,6 +141,7 @@ impl<'a, T: 'a + Material> Particle<'a, T> {
             t += dt;
 
             let mut e = self.m.energy(p);
+            int_e_dt = int_e_dt + e * dt;
             let dwlo = self.m.optical_scattering(p); // 0, если выпал из минизоны
             let dwla = self.m.acoustic_scattering(p);
             wsum += (dwla + dwlo) * dt;
@@ -171,12 +176,14 @@ impl<'a, T: 'a + Material> Particle<'a, T> {
         let n0 = n_ac + n_opt;
         let average_speed = int_v_dt / t;
         let tau = t / (n0 as f64 + 1.0);
+        let energy = int_e_dt / t;
 
         Summary {
             average_speed: average_speed,
             acoustic: n_ac,
             optical: n_opt,
             tau: tau,
+            energy: energy,
         }
     }
 }
