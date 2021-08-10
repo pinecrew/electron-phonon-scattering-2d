@@ -184,21 +184,22 @@ impl<'a, T: 'a + Material> Particle<'a, T> {
                     n_ac += 1; // наращиваем счетчик рассеяний на акустических фононах
                 }
                 let mut count = 15;
-                let theta = p.y.atan2(p.x);
+                let theta = (p.y.atan2(p.x) + 2.0 * PI) % (2.0 * PI);
                 while count > 0 {
                     let dtheta = 2.0 * PI * rng.uniform(); // случайным образом
                     // разыгрываем направление квазиимпульса
-                    let ps = self.m.momentums(e, theta + dtheta);
+                    let new_theta = (theta + dtheta) % (2.0 * PI);
+                    let ps = self.m.momentums(e, new_theta);
                     if ps.len() > 0 {
                         p = ps[0];
                         match kind {
                             Scattering::Acoustic => {
                                 from_theta_ac.add(theta);
-                                to_theta_ac.add(theta+dtheta);
+                                to_theta_ac.add(new_theta);
                             },
                             Scattering::Optical => {
                                 from_theta_op.add(theta);
-                                to_theta_op.add(theta+dtheta);
+                                to_theta_op.add(new_theta);
                             },
                         };
                         break;
