@@ -12,6 +12,8 @@ pub struct Stats {
     pub to_theta_ac: Vec<usize>,
     pub from_theta_op: Vec<usize>,
     pub to_theta_op: Vec<usize>,
+    pub field_phase_ac: Vec<usize>,
+    pub field_phase_op: Vec<usize>,
 }
 
 impl Stats {
@@ -28,6 +30,8 @@ impl Stats {
             to_theta_ac: ensemble.iter().map(|x| x.to_theta_ac.as_slice().to_vec()).reduce(|acc, x| acc.iter().zip(x.iter()).map(|(a, b)| a + b).collect::<Vec<usize>>()).unwrap(),
             from_theta_op: ensemble.iter().map(|x| x.from_theta_op.as_slice().to_vec()).reduce(|acc, x| acc.iter().zip(x.iter()).map(|(a, b)| a + b).collect::<Vec<usize>>()).unwrap(),
             to_theta_op: ensemble.iter().map(|x| x.to_theta_op.as_slice().to_vec()).reduce(|acc, x| acc.iter().zip(x.iter()).map(|(a, b)| a + b).collect::<Vec<usize>>()).unwrap(),
+            field_phase_ac: ensemble.iter().map(|x| x.field_phase_ac.as_slice().to_vec()).reduce(|acc, x| acc.iter().zip(x.iter()).map(|(a, b)| a + b).collect::<Vec<usize>>()).unwrap(),
+            field_phase_op: ensemble.iter().map(|x| x.field_phase_op.as_slice().to_vec()).reduce(|acc, x| acc.iter().zip(x.iter()).map(|(a, b)| a + b).collect::<Vec<usize>>()).unwrap(),
         }
     }
 }

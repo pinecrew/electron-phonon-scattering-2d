@@ -74,6 +74,8 @@ pub struct Summary {
     pub to_theta_ac: Vec<usize>,
     pub from_theta_op: Vec<usize>,
     pub to_theta_op: Vec<usize>,
+    pub field_phase_ac: Vec<usize>,
+    pub field_phase_op: Vec<usize>,
 }
 
 impl Summary {
@@ -88,6 +90,8 @@ impl Summary {
             to_theta_ac: vec![],
             from_theta_op: vec![],
             to_theta_op: vec![],
+            field_phase_ac: vec![],
+            field_phase_op: vec![],
         }
     }
     pub fn empty() -> Summary {
@@ -101,6 +105,8 @@ impl Summary {
             to_theta_ac: vec![],
             from_theta_op: vec![],
             to_theta_op: vec![],
+            field_phase_ac: vec![],
+            field_phase_op: vec![],
         }
     }
 }
@@ -145,6 +151,8 @@ impl<'a, T: 'a + Material> Particle<'a, T> {
         let mut to_theta_ac = Histogram::new(0.0, 2.0 * PI, n_bins);
         let mut from_theta_op = Histogram::new(0.0, 2.0 * PI, n_bins);
         let mut to_theta_op = Histogram::new(0.0, 2.0 * PI, n_bins);
+        let mut field_phase_ac = Histogram::new(0.0, 2.0 * PI, n_bins);
+        let mut field_phase_op = Histogram::new(0.0, 2.0 * PI, n_bins);
 
         let force = |p: Vec2, t: f64| -> Vec2 {
             -(f.e.0 + f.e.1 * (f.omega.1 * t).cos() + f.e.2 * (f.omega.2 * t + f.phi).cos() +
@@ -163,7 +171,6 @@ impl<'a, T: 'a + Material> Particle<'a, T> {
             // приводим импульс к зоне
             p = self.m.brillouin_zone().to_first_bz(p);
 
-            t += dt;
 
             let mut e = self.m.energy(p);
             int_e_dt = int_e_dt + e * dt;
@@ -189,6 +196,7 @@ impl<'a, T: 'a + Material> Particle<'a, T> {
                     let dtheta = 2.0 * PI * rng.uniform(); // случайным образом
                     // разыгрываем направление квазиимпульса
                     let new_theta = (theta + dtheta) % (2.0 * PI);
+                    let phase = f.omega.1 * t % (2.0 * PI);
                     let ps = self.m.momentums(e, new_theta);
                     if ps.len() > 0 {
                         p = ps[0];
@@ -196,10 +204,12 @@ impl<'a, T: 'a + Material> Particle<'a, T> {
                             Scattering::Acoustic => {
                                 from_theta_ac.add(theta);
                                 to_theta_ac.add(new_theta);
+                                field_phase_ac.add(phase);
                             },
                             Scattering::Optical => {
                                 from_theta_op.add(theta);
                                 to_theta_op.add(new_theta);
+                                field_phase_op.add(phase);
                             },
                         };
                         break;
@@ -210,6 +220,8 @@ impl<'a, T: 'a + Material> Particle<'a, T> {
                     count -= 1;
                 }
             }
+
+            t += dt;
         }
         let n0 = n_ac + n_opt;
         let average_speed = int_v_dt / t;
@@ -226,6 +238,8 @@ impl<'a, T: 'a + Material> Particle<'a, T> {
             to_theta_ac: to_theta_ac.bins,
             from_theta_op: from_theta_op.bins,
             to_theta_op: to_theta_op.bins,
+            field_phase_ac: field_phase_ac.bins,
+            field_phase_op: field_phase_op.bins,
         }
     }
 }
