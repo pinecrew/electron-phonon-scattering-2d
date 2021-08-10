@@ -8,6 +8,10 @@ pub struct Stats {
     pub acoustic: f64,
     pub tau: f64,
     pub energy: f64,
+    pub from_theta_ac: Vec<usize>,
+    pub to_theta_ac: Vec<usize>,
+    pub from_theta_op: Vec<usize>,
+    pub to_theta_op: Vec<usize>,
 }
 
 impl Stats {
@@ -20,7 +24,36 @@ impl Stats {
             acoustic: ensemble.iter().map(|x| x.acoustic).collect::<Vec<u32>>().mean(),
             tau: ensemble.iter().map(|x| x.tau).collect::<Vec<f64>>().mean(),
             energy: ensemble.iter().map(|x| x.energy).collect::<Vec<f64>>().mean(),
+            from_theta_ac: ensemble.iter().map(|x| x.from_theta_ac.as_slice().to_vec()).reduce(|acc, x| acc.iter().zip(x.iter()).map(|(a, b)| a + b).collect::<Vec<usize>>()).unwrap(),
+            to_theta_ac: ensemble.iter().map(|x| x.to_theta_ac.as_slice().to_vec()).reduce(|acc, x| acc.iter().zip(x.iter()).map(|(a, b)| a + b).collect::<Vec<usize>>()).unwrap(),
+            from_theta_op: ensemble.iter().map(|x| x.from_theta_op.as_slice().to_vec()).reduce(|acc, x| acc.iter().zip(x.iter()).map(|(a, b)| a + b).collect::<Vec<usize>>()).unwrap(),
+            to_theta_op: ensemble.iter().map(|x| x.to_theta_op.as_slice().to_vec()).reduce(|acc, x| acc.iter().zip(x.iter()).map(|(a, b)| a + b).collect::<Vec<usize>>()).unwrap(),
         }
+    }
+}
+
+pub struct Histogram {
+    pub min: f64,
+    pub max: f64,
+    pub n_bins: usize,
+    pub bins: Vec<usize>,
+    r_bin_width: f64,
+}
+
+impl Histogram {
+    pub fn new(min: f64, max: f64, n_bins: usize) -> Histogram {
+        Histogram {
+            min: min,
+            max: max,
+            n_bins: n_bins,
+            bins: vec![0; n_bins],
+            r_bin_width: (n_bins as f64) / (max - min),
+        }
+    }
+
+    pub fn add(&mut self, value: f64) {
+        let bin = (value - self.min) * self.r_bin_width;
+        self.bins[bin as usize] += 1;
     }
 }
 

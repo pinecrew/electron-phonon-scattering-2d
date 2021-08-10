@@ -4,6 +4,7 @@ use material::Material;
 use fields::Fields;
 use linal::Vec2;
 use rng::Rng;
+use stats::Histogram;
 
 fn runge<F>(p: Vec2, force: F, t: f64, dt: f64) -> Vec2
     where F: Fn(Vec2, f64) -> Vec2
@@ -69,6 +70,10 @@ pub struct Summary {
     pub optical: u32,
     pub tau: f64,
     pub energy: f64,
+    pub from_theta_ac: Vec<usize>,
+    pub to_theta_ac: Vec<usize>,
+    pub from_theta_op: Vec<usize>,
+    pub to_theta_op: Vec<usize>,
 }
 
 impl Summary {
@@ -79,6 +84,10 @@ impl Summary {
             optical: o,
             tau: t,
             energy: e,
+            from_theta_ac: vec![],
+            to_theta_ac: vec![],
+            from_theta_op: vec![],
+            to_theta_op: vec![],
         }
     }
     pub fn empty() -> Summary {
@@ -88,8 +97,18 @@ impl Summary {
             optical: 0,
             tau: 0.0,
             energy: 0.0,
+            from_theta_ac: vec![],
+            to_theta_ac: vec![],
+            from_theta_op: vec![],
+            to_theta_op: vec![],
         }
     }
+}
+
+#[derive(Debug)]
+enum Scattering {
+    Acoustic,
+    Optical,
 }
 
 pub struct Particle<'a, T: 'a + Material> {
@@ -121,6 +140,12 @@ impl<'a, T: 'a + Material> Particle<'a, T> {
         let mut int_v_dt = Vec2::zero();
         let mut int_e_dt: f64 = 0.0;
 
+        let n_bins = 256;
+        let mut from_theta_ac = Histogram::new(0.0, 2.0 * PI, n_bins);
+        let mut to_theta_ac = Histogram::new(0.0, 2.0 * PI, n_bins);
+        let mut from_theta_op = Histogram::new(0.0, 2.0 * PI, n_bins);
+        let mut to_theta_op = Histogram::new(0.0, 2.0 * PI, n_bins);
+
         let force = |p: Vec2, t: f64| -> Vec2 {
             -(f.e.0 + f.e.1 * (f.omega.1 * t).cos() + f.e.2 * (f.omega.2 * t + f.phi).cos() +
               self.m.velocity(p).cross() *
@@ -149,10 +174,12 @@ impl<'a, T: 'a + Material> Particle<'a, T> {
             if wsum > r {
                 r = -rng.uniform().ln();
                 wsum = 0.0;
+                let mut kind = Scattering::Acoustic;
                 if dwlo / (dwla + dwlo) > rng.uniform() {
                     n_opt += 1; // наращиваем счетчик рассеяний на оптических
                              // фононах
                     e -= self.m.optical_energy();
+                    kind = Scattering::Optical
                 } else {
                     n_ac += 1; // наращиваем счетчик рассеяний на акустических фононах
                 }
@@ -164,6 +191,16 @@ impl<'a, T: 'a + Material> Particle<'a, T> {
                     let ps = self.m.momentums(e, theta + dtheta);
                     if ps.len() > 0 {
                         p = ps[0];
+                        match kind {
+                            Scattering::Acoustic => {
+                                from_theta_ac.add(theta);
+                                to_theta_ac.add(theta+dtheta);
+                            },
+                            Scattering::Optical => {
+                                from_theta_op.add(theta);
+                                to_theta_op.add(theta+dtheta);
+                            },
+                        };
                         break;
                     }
                     // если p существует, то мы правильно
@@ -184,6 +221,10 @@ impl<'a, T: 'a + Material> Particle<'a, T> {
             optical: n_opt,
             tau: tau,
             energy: energy,
+            from_theta_ac: from_theta_ac.bins,
+            to_theta_ac: to_theta_ac.bins,
+            from_theta_op: from_theta_op.bins,
+            to_theta_op: to_theta_op.bins,
         }
     }
 }
